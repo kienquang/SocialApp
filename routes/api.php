@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +22,24 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 require __DIR__.'/auth.php';
 
-Route::middleware('auth:sanctum')->group(function () {
+// --- Route Public (Ai cũng xem được) ---
+Route::get('/posts', [PostController::class, 'index']);
+Route::get('/posts/{post}', [PostController::class, 'show']);
 
+// API MỚI: Lấy các phản hồi của 1 bình luận
+//Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    // API của Post
+    Route::post('/posts', [PostController::class, 'store']);
+    Route::put('/posts/{post}', [PostController::class, 'update']);
+    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+    // API MỚI CỦA COMMENT
+    // Route::post('/comments', [CommentController::class, 'store']);
+    // Route::patch('/comments/{comment}', [CommentController::class, 'update']);
+    // Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 });
 
 Route::middleware(['auth:sanctum', 'role:moderator'])

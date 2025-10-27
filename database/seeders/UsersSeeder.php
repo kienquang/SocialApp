@@ -13,7 +13,7 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hash mật khẩu '123456' một lần
+        // Mật khẩu này được hash từ '12345678' như trong file của bạn
         $password = Hash::make('12345678');
 
         DB::table('users')->insert([
@@ -21,7 +21,8 @@ class UsersSeeder extends Seeder
                 'id' => 1,
                 'name' => 'Luis1994',
                 'email' => 'luis1994@example.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'superadmin', // <-- SỬA LẠI: Khớp với CheckRole.php
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => 'https://source.unsplash.com/_7LbC5J-jw4/600x600',
@@ -32,7 +33,8 @@ class UsersSeeder extends Seeder
                 'id' => 2,
                 'name' => 'long nguyen',
                 'email' => 'ninjalong161@gmail.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'superadmin', // <-- SỬA LẠI: Khớp với CheckRole.php
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => 'https://scr.vn/wp-content/uploads/2020/07/H%C3%ACnh-n%E1%BB%81n-hoa-anh-%C4%91%C3%A0o-th%E1%BA%ADt-tinh-kh%C3%B4i.jpg',
@@ -43,7 +45,8 @@ class UsersSeeder extends Seeder
                 'id' => 3,
                 'name' => 'liem',
                 'email' => '121@gmail.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'user', // <-- THÊM VÀO: Chỉ định rõ vai trò
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => null,
@@ -54,7 +57,8 @@ class UsersSeeder extends Seeder
                 'id' => 5,
                 'name' => 'Long Nguyen Hoang',
                 'email' => 'longnguyenid3@gmail.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'user', // <-- THÊM VÀO: Chỉ định rõ vai trò
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => 'https://khoinguonsangtao.vn/wp-content/uploads/2022/08/anh-que-huong-mien-tay-yen-binh.jpg',
@@ -65,7 +69,8 @@ class UsersSeeder extends Seeder
                 'id' => 6,
                 'name' => 'Long Nguyen_1433957061140106',
                 'email' => 'bangnguyen.02081979@gmail.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'user', // <-- THÊM VÀO: Chỉ định rõ vai trò
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => 'https://tse1.mm.bing.net/th/id/OIP.RXphT3K7pvLVpcSjZha3JQHaE8?rs=1&pid=ImgDetMain&o=7&rm=3',
@@ -76,7 +81,8 @@ class UsersSeeder extends Seeder
                 'id' => 8,
                 'name' => 'long',
                 'email' => 'abc@gmail.com',
-                'password' => $password, // Cập nhật password
+                'password' => $password,
+                'role' => 'user', // <-- THÊM VÀO: Chỉ định rõ vai trò
                 'google_id' => null,
                 'facebook_id' => null,
                 'avatar' => 'https://tiki.vn/blog/wp-content/uploads/2023/01/oLkoHpw9cqRtLPTbg67bgtUvUdV1BnXRnAqqBZOVkEtPgf-_Ct3ADFJYXIjfDd0fTyECLEsWq5yZ2CCOEGxIsuHSmNNNUZQcnQT5-Ld6yoK19Q_Sphb0MmX64ga-O_TIPjItNkTL5ns4zqP1Z0OBzsIoeYKtcewnrjnVsw8vfG8uYwwCDkXaoozCrmH1kA.jpg',

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('reported_user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('reporter_id')->constrained('users')->onDelete('cascade');
             $table->text('reason');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

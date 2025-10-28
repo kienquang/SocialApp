@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('comment_id')->constrained('comments')->onDelete('cascade');
             $table->foreignId('reporter_id')->constrained('users')->onDelete('cascade');
             $table->text('reason');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

@@ -7,6 +7,7 @@ use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Mews\Purifier\Facades\Purifier;
 
 class PostController extends Controller
 {
@@ -43,11 +44,18 @@ class PostController extends Controller
             'content_html' => 'required|string',
         ]);
 
-        /** @var \App\Models\User $user */ // <-- Thêm dòng này
-        $user = Auth::user(); // <-- Gán user vào biến
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        // Gọi 'posts()' từ biến $user
-        $post = $user->posts()->create($validated);
+        // *** BƯỚC LÀM SẠCH HTML CHỐNG XSS ***
+        // Clean(input, config)
+        // 'default' là cấu hình trong file config/purifier.php
+        $clean_html = Purifier::clean($validated['content_html'], 'default');
+
+        $post = $user->posts()->create([
+            'title' => $validated['title'],
+            'content_html' => $clean_html, // <-- Lưu HTML đã được làm sạch
+        ]);
 
         return (new PostResource($post->load('user')))
                 ->response()
@@ -92,10 +100,18 @@ class PostController extends Controller
             'content_html' => 'required|string',
         ]);
 
-        $post->update($validated);
+        // *** LÀM SẠCH HTML KHI CẬP NHẬT ***
+        $clean_html = Purifier::clean($validated['content_html'], 'default');
 
-        return new PostResource($post->load('user'));
+        $post->update([
+            'title' => $validated['title'],
+            'content_html' => $clean_html, // <-- Lưu HTML đã được làm sạch
+        ]);
+
+        $post->load('user')->loadCount('comments');
+        return new PostResource($post);
     }
+
 
     /**
      * Xóa bài viết (DELETE /api/posts/{post})

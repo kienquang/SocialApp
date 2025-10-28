@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('mentioned_user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('mentioner_user_id')->constrained('users')->onDelete('cascade');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

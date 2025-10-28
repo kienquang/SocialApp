@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('type', 50);
             $table->text('data');
             $table->boolean('is_read')->default(0);
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 

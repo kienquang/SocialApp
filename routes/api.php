@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ImageUploadController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use Illuminate\Http\Request;
@@ -27,7 +29,7 @@ Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 
 // API MỚI: Lấy các phản hồi của 1 bình luận
-//Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
+Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -36,10 +38,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/posts/{post}', [PostController::class, 'update']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
-    // API MỚI CỦA COMMENT
-    // Route::post('/comments', [CommentController::class, 'store']);
-    // Route::patch('/comments/{comment}', [CommentController::class, 'update']);
-    // Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    //API CỦA COMMENT
+    Route::post('/comments', [CommentController::class, 'store']);
+    Route::patch('/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+
+    // *** API UPLOAD ẢNH  ***
+    // Dùng cho trình soạn thảo văn bản
+    Route::post('/image-upload', [ImageUploadController::class, 'upload'])->name('image.upload');
 });
 
 Route::middleware(['auth:sanctum', 'role:moderator'])

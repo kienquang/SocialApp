@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ImageUploadController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\PostVoteController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // *** API UPLOAD ẢNH  ***
     // Dùng cho trình soạn thảo văn bản
     Route::post('/image-upload', [ImageUploadController::class, 'upload'])->name('image.upload');
+
+    // --- Module Vote  ---
+    Route::post('/posts/{post}/upvote', [PostVoteController::class, 'upvote']);
+    Route::post('/posts/{post}/downvote', [PostVoteController::class, 'downvote']);
 });
 
 Route::middleware(['auth:sanctum', 'role:moderator'])

@@ -177,5 +177,16 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
         return $this->belongsToMany(User::class, 'follows', 'followed_id', 'follower_id')
                     ->withTimestamps(); // Lấy cả created_at của bảng follows
     }
+
+    /**
+     * Các bài viết mà người này đã vote.
+     * Thêm withPivot('vote') để lấy cả cột 'vote'.
+     */
+    public function votedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_votes')
+                    ->withPivot('vote')
+                    ->withTimestamps();
+    }
 }
 

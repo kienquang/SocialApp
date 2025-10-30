@@ -34,10 +34,12 @@ class PostController extends Controller
     {
         $request->validate([
             'sort' => 'in:newest,hot', // Chỉ chấp nhận 2 giá trị
+            'limit' => 'sometimes|integer|min:1|max:50' ,
             'category' => 'nullable|integer|exists:categories,id' // (MỚI) Lọc theo Category
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
+        $limit = $request->query('limit', 10);
         $categoryId = $request->query('category'); // (MỚI)
 
         /** @var Builder $query */
@@ -76,7 +78,7 @@ class PostController extends Controller
         }
 
         // 6. Phân trang
-        $posts = $query->paginate(10);
+        $posts = $query->paginate($limit);
         // (Chúng ta đã xóa withQueryString() để tương thích L7)
 
         return PostResource::collection($posts);

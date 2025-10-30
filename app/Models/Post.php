@@ -16,6 +16,8 @@ class Post extends Model
         'title',
         'content_html',
         'user_id',
+        'category_id',
+        'thumbnail_url',
     ];
 
     /**
@@ -58,5 +60,13 @@ class Post extends Model
     public function votes()
     {
         return $this->hasMany(PostVote::class);
+    }
+
+    /**
+     * Lấy category (chuyên mục) của bài viết.
+     */
+    public function category() // <-- THÊM MỚI
+    {
+        return $this->belongsTo(Category::class);
     }
 }

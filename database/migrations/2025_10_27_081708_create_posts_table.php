@@ -18,6 +18,13 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('title')->nullable();
             $table->longText('content_html');
+            $table->foreignId('category_id')
+                  ->nullable()
+                  ->constrained('categories')
+                  ->onDelete('set null');
+
+            // Cột Thumbnail
+            $table->string('thumbnail_url', 500)->nullable();
             $table->timestamps();
         });
     }

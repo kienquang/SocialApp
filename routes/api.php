@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ImageUploadController;
 use App\Http\Controllers\Api\PostController;
@@ -27,11 +29,14 @@ require __DIR__.'/auth.php';
 
 // --- Route Public (Ai cũng xem được) ---
 Route::get('/posts', [PostController::class, 'index']);
-Route::get('/posts/{post}', [PostController::class, 'show']);
+Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
 // API MỚI: Lấy các phản hồi của 1 bình luận
 Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
 
+// Lấy danh sách chuyên mục
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -64,7 +69,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])
     ->prefix('admin') // Tiền tố /api/admin
     ->name('admin.')
     ->group(function () {
-
+           // Quản lý chuyên mục (Thêm/Sửa/Xóa)
+        // Dùng apiResource để tạo nhanh các route:
+        // GET /admin/categories -> index
+        // POST /admin/categories -> store
+        // GET /admin/categories/{category} -> show
+        // PUT/PATCH /admin/categories/{category} -> update
+        // DELETE /admin/categories/{category} -> destroy
+        Route::apiResource('categories', AdminCategoryController::class);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

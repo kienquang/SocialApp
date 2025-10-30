@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         // Gọi các seeder theo đúng thứ tự phụ thuộc
         $this->call([
             UsersSeeder::class,
+            CategoriesSeeder::class, 
             PostsSeeder::class,
             FollowsSeeder::class,
             MessagesSeeder::class,

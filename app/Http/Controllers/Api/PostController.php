@@ -7,84 +7,119 @@ use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Mews\Purifier\Facades\Purifier;
+use Illuminate\Support\Facades\Gate; // Dùng cho Policy
+use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
+use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
 
 class PostController extends Controller
 {
+    /**
+     * Khởi tạo, đăng ký policy
+     * (Chúng ta sẽ dùng middleware 'can' trong file routes
+     * thay vì gọi $this->authorize() ở đây)
+     */
     public function __construct()
     {
-        // Yêu cầu xác thực cho các hành động tạo, sửa, xóa
-        $this->middleware('auth:sanctum')->except(['index', 'show']);
+        // Áp dụng policy cho các hàm tương ứng
+        // 'post' là tên param trong route
+        $this->middleware('can:update,post')->only('update');
+        $this->middleware('can:delete,post')->only('destroy');
     }
+
+
     /**
-     * Lấy danh sách bài viết (GET /api/posts)
-     * (Hàm này không thay đổi, nó vẫn load 'user' và 'comments_count')
+     * Lấy danh sách bài viết (có phân trang và sắp xếp).
      */
     public function index(Request $request)
     {
-        // 1. Logic sắp xếp (sort)
-        $sort = $request->query('sort', 'newest'); // Mặc định là 'newest'
+        $request->validate([
+            'sort' => 'in:newest,hot', // Chỉ chấp nhận 2 giá trị
+            'category' => 'nullable|integer|exists:categories,id' // (MỚI) Lọc theo Category
+        ]);
 
+        $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
+        $categoryId = $request->query('category'); // (MỚI)
+
+        /** @var Builder $query */
         $query = Post::query();
 
-        if ($sort === 'hot') {
-            // Sắp xếp 'hot': Tính điểm dựa trên tổng vote (score)
-            // Sắp xếp theo cột 'vote_score' (được tạo bởi withSum) giảm dần
-            $query->withSum('votes as vote_score', 'vote')
-                  ->orderBy('vote_score', 'desc');
-        } else {
-            // Sắp xếp 'newest' (mặc định)
-            $query->orderBy('created_at', 'desc');
+        // 1. Tải các quan hệ cần thiết
+        // (MỚI: Thêm 'category')
+        $query->with(['user', 'category']);
+
+        // 2. Tải các số đếm
+        // Dùng 'allComments' (đã sửa) để đếm TẤT CẢ bình luận
+        $query->withCount('allComments as comments_count');
+        $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
+
+        // (MỚI) 3. Lọc theo Category nếu có
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
         }
 
-        // 2. Tải các quan hệ cần thiết
-        // withSum: Tính tổng cột 'vote' và lưu vào 'vote_score'
-        // withCount: Đếm số lượng bình luận
-        $query->with(['user'])
-              ->withSum('votes as vote_score', 'vote')
-              ->withCount('allComments as comments_count'); // Đổi tên 'allComments' thành 'comments_count'
+        // 4. Sắp xếp
+        if ($sortType === 'hot') {
+            // Sắp xếp theo điểm vote (cao -> thấp)
+            // Cân nhắc thêm 'created_at' để ưu tiên bài mới hơn
+            $query->orderByDesc('vote_score');
+            $query->orderByDesc('created_at'); // Nếu cùng điểm, bài mới hơn lên trước
+        } else {
+            // Sắp xếp theo mới nhất (mặc định)
+            $query->orderByDesc('created_at');
+        }
 
-        // 3. Tải trạng thái vote của user hiện tại (nếu đã đăng nhập)
-        if (Auth::guard('sanctum')->check()) {
-            /** @var \App\Models\User $user */
-            $user = Auth::guard('sanctum')->user();
-            // Tải (load) quan hệ 'voters' nhưng chỉ cho user hiện tại
-            $query->with(['voters' => function ($query) use ($user) {
-                $query->where('user_id', $user->id);
+        // 5. Tải vote của user hiện tại (nếu đã đăng nhập)
+        if (Auth::check()) {
+            $query->with(['voters' => function ($query) {
+                $query->where('user_id', Auth::id());
             }]);
         }
 
-        // 4. Phân trang
-        $posts = $query->paginate(10); // withQueryString() giữ lại tham số ?sort=hot
+        // 6. Phân trang
+        $posts = $query->paginate(10);
+        // (Chúng ta đã xóa withQueryString() để tương thích L7)
 
         return PostResource::collection($posts);
     }
 
     /**
-     * Tạo bài viết mới (POST /api/posts)
-     * (Hàm này không thay đổi)
+     * Tạo bài viết mới.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content_html' => 'required|string',
+            // --- CẬP NHẬT ---
+            'category_id' => 'required|integer|exists:categories,id',
+            'thumbnail_url' => 'nullable|url|max:500', // Phải là URL (từ Cloudinary)
         ]);
 
-        // Làm sạch HTML trước khi lưu
-        $validated['content_html'] = Purifier::clean($validated['content_html']);
+        // Làm sạch HTML (Chống XSS)
+        $safeContent = Purifier::clean($validated['content_html']);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Gọi 'posts()' từ biến $user
-        $post = $user->posts()->create($validated);
+        // Tạo bài viết
+        $post = $user->posts()->create([
+            'title' => $validated['title'],
+            'content_html' => $safeContent,
+            'category_id' => $validated['category_id'], // <-- THÊM MỚI
+            'thumbnail_url' => $validated['thumbnail_url'], // <-- THÊM MỚI
+        ]);
 
-        // Tải 'user' và tính 'vote_score' (ban đầu là 0) và 'comments_count'
-        $post->load('user');
-        $post->loadSum('votes as vote_score', 'vote');
+        // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
+        // (MỚI: Thêm 'category')
+        $post->load(['user', 'category']);
+
+        // Tải các giá trị (count/sum) cho bài viết mới
+        // (Bài mới nên giá trị đều là 0)
         $post->loadCount('allComments as comments_count');
-        // $post->voters rỗng (vì là bài mới), nên user_vote sẽ là 0
+        $post->loadSum('votes as vote_score', 'vote');
+
+        // 'voters' sẽ là collection rỗng (vì chưa ai vote)
+        $post->load('voters');
 
         return (new PostResource($post))
                 ->response()
@@ -92,38 +127,31 @@ class PostController extends Controller
     }
 
     /**
-     * Lấy chi tiết một bài viết (GET /api/posts/{post})
-     * *** HÀM NÀY ĐƯỢC CẬP NHẬT ***
+     * Hiển thị chi tiết một bài viết.
      */
-    /**
-     * Hiển thị một bài viết cụ thể.
-     */
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
-        // 1. Tải quan hệ cơ bản
-        // Tải tác giả (user)
-        // Tải các bình luận gốc (top-level) và đính kèm (nested) tác giả của chúng + số lượng replies
+        // Tải các quan hệ chính
+        // (MỚI: Thêm 'category')
+        $post->load(['user', 'category']);
+
+        // Tải các số đếm
+        $post->loadCount('allComments as comments_count');
+        $post->loadSum('votes as vote_score', 'vote');
+
+        // Tải bình luận GỐC (phân trang)
         $post->load([
-            'user',
             'comments' => function ($query) {
-                $query->with('user')
-                      ->withCount('replies')
-                      ->orderBy('created_at', 'desc');
+                $query->with('user') // Tải tác giả của bình luận
+                      ->withCount('replies as replies_count') // Đếm số phản hồi
+                      ->orderBy('created_at', 'asc'); // Cũ nhất trước
             }
         ]);
 
-        // 2. Tải điểm số và số bình luận
-        // loadSum: Tính tổng 'vote' và lưu vào 'vote_score'
-        // loadCount: Đếm tổng số bình luận (allComments)
-        $post->loadSum('votes as vote_score', 'vote');
-        $post->loadCount('allComments as comments_count');
-
-        // 3. Tải trạng thái vote của user hiện tại (nếu đã đăng nhập)
-        if (Auth::guard('sanctum')->check()) {
-            /** @var \App\Models\User $user */
-            $user = Auth::guard('sanctum')->user();
-            $post->load(['voters' => function ($query) use ($user) {
-                $query->where('user_id', $user->id);
+        // Tải vote của user hiện tại (nếu đã đăng nhập)
+        if (Auth::check()) {
+            $post->load(['voters' => function ($query) {
+                $query->where('user_id', Auth::id());
             }]);
         }
 
@@ -131,53 +159,54 @@ class PostController extends Controller
     }
 
     /**
-     * Cập nhật một bài viết trong CSDL.
+     * Cập nhật bài viết.
      */
     public function update(Request $request, Post $post)
     {
-        // 1. Kiểm tra quyền (Authorization)
-        $this->authorize('update', $post); // Sử dụng PostPolicy
+        // Policy đã được check bởi middleware
 
-        // 2. Validate dữ liệu
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content_html' => 'required|string',
+            // --- CẬP NHẬT ---
+            'category_id' => 'required|integer|exists:categories,id',
+            'thumbnail_url' => 'nullable|url|max:500',
         ]);
 
-        // 3. Làm sạch HTML
-        $validated['content_html'] = Purifier::clean($validated['content_html']);
+        // Làm sạch HTML (Chống XSS)
+        $safeContent = Purifier::clean($validated['content_html']);
 
-        // 4. Cập nhật
-        $post->update($validated);
+        $post->update([
+            'title' => $validated['title'],
+            'content_html' => $safeContent,
+            'category_id' => $validated['category_id'], // <-- THÊM MỚI
+            'thumbnail_url' => $validated['thumbnail_url'], // <-- THÊM MỚI
+        ]);
 
-        // 5. Tải lại các quan hệ cần thiết để trả về
-        $post->load('user');
-        $post->loadSum('votes as vote_score', 'vote');
+        // Tải lại các quan hệ để trả về JSON mới nhất
+        $post->load(['user', 'category']);
+
+        // Không cần tải lại count/sum/voters vì chúng không đổi khi update
+        // Nhưng nếu muốn trả về JSON đầy đủ, ta có thể load lại
         $post->loadCount('allComments as comments_count');
-
-        if (Auth::guard('sanctum')->check()) {
-            /** @var \App\Models\User $user */
-            $user = Auth::guard('sanctum')->user();
-            $post->load(['voters' => function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            }]);
+        $post->loadSum('votes as vote_score', 'vote');
+        if (Auth::check()) {
+            $post->load(['voters' => fn($q) => $q->where('user_id', Auth::id())]);
         }
 
         return new PostResource($post);
     }
 
     /**
-     * Xóa một bài viết khỏi CSDL.
+     * Xóa bài viết.
      */
     public function destroy(Post $post)
     {
-        // 1. Kiểm tra quyền (Authorization)
-        $this->authorize('delete', $post); // Sử dụng PostPolicy
+        // Policy đã được check bởi middleware
 
-        // 2. Xóa
         $post->delete();
 
-        // 3. Trả về response trống
-        return response()->noContent(); // 204 No Content
+        // 204 No Content: Báo thành công, không cần trả về nội dung
+        return response()->json(null, 204);
     }
 }

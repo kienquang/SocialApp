@@ -78,8 +78,10 @@ class PostController extends Controller
         }
 
         // 6. Phân trang
-        $posts = $query->paginate($limit);
-        // (Chúng ta đã xóa withQueryString() để tương thích L7)
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
+        $paginator = $query->paginate($limit);
+        $posts = $paginator->withQueryString();
+        //$posts = $query->paginate($limit)->withQueryString();
 
         return PostResource::collection($posts);
     }

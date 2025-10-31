@@ -17,6 +17,7 @@ class Comment extends Model
         'post_id',
         'parent_id',
         'content',
+        'status',
     ];
 
     /**
@@ -32,6 +33,7 @@ class Comment extends Model
      */
     public function replies()
     {
-        return $this->hasMany(Comment::class, 'parent_id');
+        return $this->hasMany(Comment::class, 'parent_id')
+                        ->where('status', 'published');
     }
 }

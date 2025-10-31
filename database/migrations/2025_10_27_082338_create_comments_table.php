@@ -20,6 +20,7 @@ return new class extends Migration
             // Khóa ngoại tự tham chiếu đến chính nó (cho comment trả lời)
             $table->foreignId('parent_id')->nullable()->constrained('comments')->onDelete('cascade');
             $table->text('content');
+            $table->string('status', 50)->default('published')->index();
             $table->timestamps();
         });
     }

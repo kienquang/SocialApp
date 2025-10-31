@@ -9,6 +9,17 @@ use Illuminate\Auth\Access\Response;
 class PostPolicy
 {
     /**
+     *Quyền xem các bài viết không public (ví dụ: status = 'removed_by_mod').
+     * Đây là quyền "xem bằng chứng" của Admin/Mod.
+     */
+    public function view(User $user, Post $post): bool
+    {
+        // Chỉ Mod hoặc cao hơn mới có quyền xem các bài đã bị gỡ
+        return $user->role === 'moderator'
+            || $user->role === 'admin'
+            || $user->role === 'superadmin';
+    }
+    /**
      * Kiểm tra xem user có thể cập nhật bài viết không.
      * Chỉ chủ sở hữu mới có quyền cập nhật.
      */

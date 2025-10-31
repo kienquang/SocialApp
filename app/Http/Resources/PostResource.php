@@ -39,6 +39,12 @@ class PostResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
+            //  Chỉ hiển thị status cho Admin/Mod nếu nó KHÁC 'published'
+            'status' => $this->when(
+                $this->status !== 'published',
+                $this->status
+            ),
+
             // Thông tin tác giả (lồng UserResource)
             'author' => new UserResource($this->whenLoaded('user')),
 

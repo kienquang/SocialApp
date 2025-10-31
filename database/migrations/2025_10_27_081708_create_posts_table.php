@@ -25,6 +25,9 @@ return new class extends Migration
 
             // Cột Thumbnail
             $table->string('thumbnail_url', 500)->nullable();
+            // 'published' (công khai), 'removed' (bị gỡ), 'draft' (bản nháp)
+            // ->index() là để tối ưu hóa hiệu suất (như đã thảo luận)
+            $table->string('status', 50)->default('published')->index();
             $table->timestamps();
         });
     }

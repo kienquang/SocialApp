@@ -35,12 +35,14 @@ class PostController extends Controller
         $request->validate([
             'sort' => 'in:newest,hot', // Chỉ chấp nhận 2 giá trị
             'limit' => 'sometimes|integer|min:1|max:50' ,
-            'category' => 'nullable|integer|exists:categories,id' // (MỚI) Lọc theo Category
+            'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
+            'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
         $limit = $request->query('limit', 10);
         $categoryId = $request->query('category'); // (MỚI)
+        $searchTerm = $request->input('q');
 
         /** @var Builder $query */
         $query = Post::query();
@@ -57,6 +59,21 @@ class PostController extends Controller
         // (MỚI) 3. Lọc theo Category nếu có
         if ($categoryId) {
             $query->where('category_id', $categoryId);
+        }
+        // 6. (MỚI) Tìm kiếm (Searching)
+        if ($searchTerm) {
+            // Bao bọc trong where() để logic AND/OR không bị lẫn
+            $query->where(function ($subQuery) use ($searchTerm) {
+                $likeTerm = '%' . $searchTerm . '%';
+                // Tìm theo Tiêu đề BÀI VIẾT
+                $subQuery->where('title', 'LIKE', $likeTerm)
+                         // HOẶC tìm theo Nội dung BÀI VIẾT (có thể chậm)
+                         ->orWhere('content_html', 'LIKE', $likeTerm)
+                         // HOẶC tìm theo Tên TÁC GIẢ
+                         ->orWhereHas('user', function ($userQuery) use ($likeTerm) {
+                             $userQuery->where('name', 'LIKE', $likeTerm);
+                         });
+            });
         }
 
         // 4. Sắp xếp

@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\Admin\UserManagementController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\ImageUploadController;
+use App\Http\Controllers\Api\Moderator\ModerationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostVoteController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use App\Http\Controllers\Api\UserProfileController;
 use Illuminate\Http\Request;
@@ -71,13 +74,32 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
+
+    // Module 8: Báo cáo (Gửi báo cáo)
+
+    Route::post('/posts/{post}/report', [ReportController::class, 'storePostReport'])
+         ->name('posts.report');
+
+    Route::post('/comments/{comment}/report', [ReportController::class, 'storeCommentReport'])
+         ->name('comments.report');
+
+    Route::post('/users/{user}/report', [ReportController::class, 'storeUserReport'])
+         ->name('users.report');
 });
 
 Route::middleware(['auth:sanctum', 'role:moderator'])
     ->prefix('moderator') // Tiền tố /api/moderator
     ->name('moderator.')
     ->group(function () {
+        // 2. Thay thế Controller
+        Route::get('/reports/posts', [ModerationController::class, 'getPostReports']);
+        Route::get('/reports/comments', [ModerationController::class, 'getCommentReports']);
+        Route::get('/reports/users', [ModerationController::class, 'getUserReports']);
 
+        // Xử lý/Xóa một báo cáo (sau khi đã hành động, ví dụ: gỡ bài)
+        Route::delete('/reports/posts/{reportPost}', [ModerationController::class, 'resolvePostReport']);
+        Route::delete('/reports/comments/{reportComment}', [ModerationController::class, 'resolveCommentReport']);
+        Route::delete('/reports/users/{reportUser}', [ModerationController::class, 'resolveUserReport']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])
@@ -92,6 +114,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         // PUT/PATCH /admin/categories/{category} -> update
         // DELETE /admin/categories/{category} -> destroy
         Route::apiResource('categories', AdminCategoryController::class);
+
+        // Quản lý User (Ban/Unban)
+        Route::post('/users/{user}/ban', [UserManagementController::class, 'ban']);
+        Route::post('/users/{user}/unban', [UserManagementController::class, 'unban']);
+
+        // Xem Lịch sử Kiểm duyệt (Moderation History) của 1 User
+        Route::get('/users/{user}/moderation-history', [UserManagementController::class, 'getModerationHistory']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

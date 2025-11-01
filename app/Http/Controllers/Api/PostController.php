@@ -156,9 +156,7 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        // (LOGIC MỚI) Kiểm tra xem bài viết có được phép xem không
-        $user = $request->user();
-        if ($post->status !== 'published' && (!$user || !$user->can('view', $post))) {
+        if ($post->status !== 'published') {
              return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
         }
         // Tải các quan hệ chính

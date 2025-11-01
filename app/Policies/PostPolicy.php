@@ -8,11 +8,24 @@ use Illuminate\Auth\Access\Response;
 
 class PostPolicy
 {
+    public function before(User $user, $ability)
+    {
+        // DEBUG: Dừng và in ra role của user
+        // Dòng này sẽ dừng chương trình và hiển thị role thật sự
+        // của user đang đăng nhập trong response của Postman.
+
+        // Code bên dưới sẽ không chạy khi dd() đang được kích hoạt
+        if ($user->role === 'superadmin') {
+            return true;
+        }
+
+        return null;
+    }
     /**
      *Quyền xem các bài viết không public (ví dụ: status = 'removed_by_mod').
      * Đây là quyền "xem bằng chứng" của Admin/Mod.
      */
-    public function view(User $user, Post $post): bool
+    public function view(User $user): bool
     {
         // Chỉ Mod hoặc cao hơn mới có quyền xem các bài đã bị gỡ
         return $user->role === 'moderator'

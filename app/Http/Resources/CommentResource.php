@@ -18,6 +18,13 @@ class CommentResource extends JsonResource
             'id' => $this->id,
             'content' => $this->content,
             'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+
+            // (LOGIC MỚI) Chỉ hiển thị status cho Admin/Mod nếu nó KHÁC 'published'
+            'status' => $this->when(
+                $this->status !== 'published',
+                $this->status
+            ),
             'parent_id' => $this->parent_id,
 
             // Đính kèm thông tin tác giả

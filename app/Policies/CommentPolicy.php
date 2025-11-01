@@ -9,6 +9,15 @@ use Illuminate\Auth\Access\Response;
 class CommentPolicy
 {
     /**
+     * (MỚI) Quyền xem các bình luận không public (ví dụ: status = 'removed_by_mod').
+     */
+    public function view(User $user, Comment $comment): bool
+    {
+        return $user->role === 'moderator'
+            || $user->role === 'admin'
+            || $user->role === 'superadmin';
+    }
+    /**
      * Cho phép admin/superadmin làm mọi thứ
      */
     public function before(User $user, string $ability): bool|null

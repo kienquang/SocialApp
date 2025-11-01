@@ -188,5 +188,7 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
                     ->withPivot('vote')
                     ->withTimestamps();
     }
+
+    
 }
 

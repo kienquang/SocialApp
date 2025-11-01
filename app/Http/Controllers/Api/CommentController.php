@@ -86,13 +86,29 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        // 1. Kiểm tra quyền (sử dụng CommentPolicy)
+        // 1. Kiểm tra quyền (Policy)
         $this->authorize('delete', $comment);
 
-        // 2. Xóa
-        $comment->delete();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        // 3. Trả về 204 No Content
-        return response()->noContent();
+        $newStatus = '';
+        $message = '';
+
+        // 2. Quyết định trạng thái (status) mới
+        if ($user->role === 'moderator' || $user->role === 'admin' || $user->role === 'superadmin') {
+            $newStatus = 'removed_by_mod';
+            $message = 'Bình luận đã được gỡ bỏ bởi Ban Quản Trị.';
+        } else {
+            $newStatus = 'removed_by_author';
+            $message = 'Bình luận đã được xóa bởi tác giả.';
+        }
+
+        // 3. Cập nhật status
+        $comment->update([
+            'status' => $newStatus
+        ]);
+
+        return response()->json(['message' => $message], 200);
     }
 }

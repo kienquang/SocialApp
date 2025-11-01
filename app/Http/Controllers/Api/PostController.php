@@ -35,15 +35,20 @@ class PostController extends Controller
         $request->validate([
             'sort' => 'in:newest,hot', // Chỉ chấp nhận 2 giá trị
             'limit' => 'sometimes|integer|min:1|max:50' ,
-            'category' => 'nullable|integer|exists:categories,id' // (MỚI) Lọc theo Category
+            'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
+            'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
         $limit = $request->query('limit', 10);
         $categoryId = $request->query('category'); // (MỚI)
+        $searchTerm = $request->input('q');
 
         /** @var Builder $query */
         $query = Post::query();
+
+        // (QUAN TRỌNG) Chỉ lấy các bài viết đã được 'published' (công khai)
+        $query->where('status', 'published');
 
         // 1. Tải các quan hệ cần thiết
         // (MỚI: Thêm 'category')
@@ -57,6 +62,21 @@ class PostController extends Controller
         // (MỚI) 3. Lọc theo Category nếu có
         if ($categoryId) {
             $query->where('category_id', $categoryId);
+        }
+        // 6. (MỚI) Tìm kiếm (Searching)
+        if ($searchTerm) {
+            // Bao bọc trong where() để logic AND/OR không bị lẫn
+            $query->where(function ($subQuery) use ($searchTerm) {
+                $likeTerm = '%' . $searchTerm . '%';
+                // Tìm theo Tiêu đề BÀI VIẾT
+                $subQuery->where('title', 'LIKE', $likeTerm)
+                         // HOẶC tìm theo Nội dung BÀI VIẾT (có thể chậm)
+                         ->orWhere('content_html', 'LIKE', $likeTerm)
+                         // HOẶC tìm theo Tên TÁC GIẢ
+                         ->orWhereHas('user', function ($userQuery) use ($likeTerm) {
+                             $userQuery->where('name', 'LIKE', $likeTerm);
+                         });
+            });
         }
 
         // 4. Sắp xếp
@@ -78,8 +98,10 @@ class PostController extends Controller
         }
 
         // 6. Phân trang
-        $posts = $query->paginate($limit);
-        // (Chúng ta đã xóa withQueryString() để tương thích L7)
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
+        $paginator = $query->paginate($limit);
+        $posts = $paginator->withQueryString();
+        //$posts = $query->paginate($limit)->withQueryString();
 
         return PostResource::collection($posts);
     }
@@ -109,6 +131,7 @@ class PostController extends Controller
             'content_html' => $safeContent,
             'category_id' => $validated['category_id'], // <-- THÊM MỚI
             'thumbnail_url' => $validated['thumbnail_url'], // <-- THÊM MỚI
+            'status'=>'published',
         ]);
 
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
@@ -133,8 +156,12 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
+        // (LOGIC MỚI) Kiểm tra xem bài viết có được phép xem không
+        $user = $request->user();
+        if ($post->status !== 'published' && (!$user || !$user->can('view', $post))) {
+             return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
+        }
         // Tải các quan hệ chính
-        // (MỚI: Thêm 'category')
         $post->load(['user', 'category']);
 
         // Tải các số đếm
@@ -204,11 +231,34 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        // Policy đã được check bởi middleware
+        // 1. Kiểm tra quyền (Policy sẽ cho phép Tác giả HOẶC Mod)
+        $this->authorize('delete', $post);
 
-        $post->delete();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        // 204 No Content: Báo thành công, không cần trả về nội dung
-        return response()->json(null, 204);
+        $newStatus = '';
+        $message = '';
+
+        // 2. Quyết định trạng thái (status) mới
+        if ($user->role === 'moderator' || $user->role === 'admin' || $user->role === 'superadmin') {
+            // Đây là hành động "Gỡ bài" (Kiểm duyệt)
+            // Bài viết này sẽ được giữ lại làm "bằng chứng"
+            $newStatus = 'removed_by_mod';
+            $message = 'Bài viết đã được gỡ bỏ bởi Ban Quản Trị.';
+        } else {
+            // Đây là hành động "Xóa bài" (Tác giả)
+            // Chúng ta cũng có thể dùng 'deleted_by_author'
+            // 'removed' là đủ hiểu, miễn là chúng ta phân biệt được
+            $newStatus = 'removed_by_author';
+            $message = 'Bài viết đã được xóa bởi tác giả.';
+        }
+
+        // 3. Cập nhật status
+        $post->update([
+            'status' => $newStatus
+        ]);
+
+        return response()->json(['message' => $message], 200);
     }
 }

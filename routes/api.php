@@ -3,10 +3,13 @@
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\ImageUploadController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostVoteController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
+use App\Http\Controllers\Api\UserProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +41,12 @@ Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
+// Routes xem Hồ sơ (Profile) công khai
+// (Dùng 'user' làm tên tham số cho Model Binding)
+Route::get('/profiles/{user}', [ProfileController::class, 'show']);
+Route::get('/profiles/{user}/followers', [ProfileController::class, 'getFollowers']);
+Route::get('/profiles/{user}/following', [ProfileController::class, 'getFollowing']);
+
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
     Route::post('/posts', [PostController::class, 'store']);
@@ -56,6 +65,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- Module Vote  ---
     Route::post('/posts/{post}/upvote', [PostVoteController::class, 'upvote']);
     Route::post('/posts/{post}/downvote', [PostVoteController::class, 'downvote']);
+
+    // ---  CẬP NHẬT AVATAR ---
+    Route::post('/user/avatar', [UserProfileController::class, 'updateAvatar']);
+
+    // --- MODULE FOLLOW ---
+    Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
 });
 
 Route::middleware(['auth:sanctum', 'role:moderator'])

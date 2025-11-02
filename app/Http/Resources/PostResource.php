@@ -16,17 +16,21 @@ class PostResource extends JsonResource
      */
     public function toArray($request)
     {
-        $userVote = 0; // Mặc định là 0 (chưa vote)
+        $userVote = 0; // Mặc định là 0 (chưa vote (bầu chọn)/khách)
 
-        // $this->relationLoaded('voters')
-        //     - Kiểm tra xem quan hệ 'voters' đã được load ở Controller chưa
-        //       (chỉ load khi user đã đăng nhập)
-        // $this->voters->isNotEmpty()
-        //     - Kiểm tra xem user này đã vote bài này chưa
+        // 1. Kiểm tra xem quan hệ (relationship) 'votes' (các phiếu bầu) có được tải (load) không
+        //    (Controller (Bộ điều khiển) *nên* đã tải (load) nó)
+        if ($this->relationLoaded('votes')) {
 
-        if ($this->relationLoaded('voters') && $this->voters->isNotEmpty()) {
-            // Nếu cả 2 điều kiện đúng, lấy giá trị vote (1 hoặc -1)
-            $userVote = $this->voters->first()->pivot->vote;
+            // 2. 'votes' (các phiếu bầu) là một Collection (Danh sách) (đã được Controller (bộ điều khiển) lọc (filter)
+            //    chỉ chứa vote (phiếu bầu) của user (người dùng) hiện tại). Lấy phần tử đầu tiên.
+            $firstVote = $this->votes->first();
+
+            // 3. Nếu nó không null (tức là user (người dùng) này đã vote (bầu chọn))
+            if ($firstVote) {
+                // Lấy giá trị 'vote' (không cần 'pivot')
+                $userVote = (int) $firstVote->vote;
+            }
         }
 
 

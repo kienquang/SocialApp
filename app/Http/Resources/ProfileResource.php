@@ -15,27 +15,19 @@ class ProfileResource extends JsonResource
     public function toArray($request)
     {
         return [
-            // Thông tin cơ bản
             'id' => $this->id,
             'name' => $this->name,
             'avatar' => $this->avatar,
             'role' => $this->role,
             'created_at' => $this->created_at,
 
-            // SỐ LƯỢNG (Counts) - (Lấy từ loadCount)
-            // (Dùng ?? 0 để an toàn nếu loadCount bị thiếu)
-            'followers_count' => (int) ($this->followers_count ?? 0),
-            'following_count' => (int) ($this->following_count ?? 0),
-            'posts_count' => (int) ($this->posts_count ?? 0),
+            // Thêm (Add) các số đếm (counts) (đã được tải (load) từ Controller (Bộ điều khiển))
+            'followers_count' => $this->followers_count ?? 0,
+            'following_count' => $this->following_count ?? 0,
+            'posts_count' => $this->posts_count ?? 0,
 
-            // TRẠNG THÁI THEO DÕI (Rất quan trọng)
-            // (Lấy từ thuộc tính 'is_following' (ảo) mà Controller đã tạo)
-            // 'when' (khi) thuộc tính này tồn tại, hãy thêm vào
-            'is_following' => $this->when(
-                isset($this->is_following),
-                (bool) $this->is_following,
-                false // Giá trị mặc định (cho an toàn)
-            ),
+            // (MỚI) Thêm (Add) 'is_following' (trạng thái theo dõi) (đã được tính toán ở Controller (Bộ điều khiển))
+            'is_following' => $this->is_following ?? false,
         ];
     }
 }

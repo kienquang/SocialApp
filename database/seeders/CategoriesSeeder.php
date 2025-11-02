@@ -4,45 +4,34 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str; // Cần để tạo slug
-use Carbon\Carbon; // Cần để tạo timestamp
+use Illuminate\Support\Str;
 
 class CategoriesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        $now = Carbon::now();
+        $categories = [
+            ['name' => 'Du lịch - Khám phá', 'description' => 'Chia sẻ hành trình và trải nghiệm du lịch.'],
+            ['name' => 'Văn hóa - Xã hội', 'description' => 'Góc nhìn về các vấn đề văn hóa và xã hội.'],
+            ['name' => 'Công nghệ', 'description' => 'Tin tức, thủ thuật và đánh giá sản phẩm công nghệ.'],
+            ['name' => 'Khoa học', 'description' => 'Khám phá tri thức và các phát kiến khoa học.'],
+            ['name' => 'Giải trí', 'description' => 'Bình luận phim, âm nhạc và các sự kiện giải trí.'],
+        ];
 
-        DB::table('categories')->insert([
-            [
-                'id' => 1,
-                'name' => 'Du lịch - Khám phá',
-                'slug' => 'du-lich-kham-pha',
-                'description' => 'Các bài viết về du lịch, khám phá vùng đất mới.',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 2,
-                'name' => 'Văn hóa - Xã hội',
-                'slug' => 'van-hoa-xa-hoi',
-                'description' => 'Góc nhìn về văn hóa và các vấn đề xã hội.',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 3,
-                'name' => 'Công nghệ',
-                'slug' => 'cong-nghe',
-                'description' => 'Tin tức và cập nhật về thế giới công nghệ.',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ]);
+        $data = [];
+        foreach ($categories as $category) {
+            $data[] = [
+                'name' => $category['name'],
+                'slug' => Str::slug($category['name']),
+                'description' => $category['description'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        DB::table('categories')->insert($data);
     }
 }

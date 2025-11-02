@@ -90,10 +90,15 @@ class PostController extends Controller
             $query->orderByDesc('created_at');
         }
 
-        // 5. Tải vote của user hiện tại (nếu đã đăng nhập)
-        if (Auth::check()) {
-            $query->with(['voters' => function ($query) {
-                $query->where('user_id', Auth::id());
+        // 8. (ĐÃ SỬA) Tải (load) vote (phiếu bầu) của user (người dùng) hiện tại
+        // Thử (try) lấy user (người dùng) từ 'sanctum' guard (bộ bảo vệ 'sanctum') (nếu token (mã) được gửi)
+        /** @var \App\Models\User|null $user */
+        $user = Auth::guard('sanctum')->user();
+
+        if ($user) {
+            // Nếu tìm thấy user (người dùng) (đã đăng nhập), tải (load) vote (phiếu bầu) của họ
+            $query->with(['votes' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             }]);
         }
 
@@ -156,9 +161,7 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        // (LOGIC MỚI) Kiểm tra xem bài viết có được phép xem không
-        $user = $request->user();
-        if ($post->status !== 'published' && (!$user || !$user->can('view', $post))) {
+        if ($post->status !== 'published') {
              return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
         }
         // Tải các quan hệ chính
@@ -177,10 +180,11 @@ class PostController extends Controller
             }
         ]);
 
+        $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)
-        if (Auth::check()) {
-            $post->load(['voters' => function ($query) {
-                $query->where('user_id', Auth::id());
+        if ($user) {
+            $post->load(['votes' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
             }]);
         }
 

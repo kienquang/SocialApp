@@ -23,18 +23,21 @@ class ProfileController extends Controller
         // (Rất quan trọng) Kiểm tra xem NGƯỜI DÙNG ĐANG ĐĂNG NHẬP
         // có đang theo dõi người dùng (profile) này không.
 
-        // Tạo một thuộc tính 'is_following' (ảo)
-        $user->is_following = false; // Mặc định là false (cho khách)
+        // (ĐÃ SỬA) Thử (try) lấy user (người dùng) đang đăng nhập
+        /** @var \App\Models\User|null $currentUser */
+        $currentUser = Auth::guard('sanctum')->user();
 
-        if (Auth::check()) {
-            /** @var \App\Models\User $authUser */
-            $authUser = Auth::user();
-
-            // Dùng exists() để kiểm tra nhanh
-            $user->is_following = $authUser->following()->where('followed_id', $user->id)->exists();
+        // (ĐÃ SỬA) Kiểm tra xem $currentUser (người dùng hiện tại) có đang theo dõi (follow) $user (người dùng) (trang profile) không
+        $isFollowing = false;
+        if ($currentUser) {
+            // $user (người dùng) (trang profile) có $currentUser (người dùng hiện tại) trong danh sách 'followers' (người theo dõi) không
+            $isFollowing = $user->followers()->where('follower_id', $currentUser->id)->exists();
         }
 
-        // Trả về qua ProfileResource để format JSON
+        // 1. Thêm (Add) 'is_following' (trạng thái theo dõi) như một thuộc tính "ảo" (virtual attribute) vào $user (người dùng)
+        $user->is_following = $isFollowing;
+
+        // 2. Trả về Resource (Định dạng) (ĐÃ XÓA ->additional())
         return new ProfileResource($user);
     }
 

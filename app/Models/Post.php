@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Post extends Model
 {
@@ -70,4 +72,5 @@ class Post extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
 }

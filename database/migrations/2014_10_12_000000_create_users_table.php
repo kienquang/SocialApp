@@ -18,10 +18,11 @@ return new class extends Migration
             $table->string('name', 100); // Đã đổi từ username
             $table->string('email', 150)->unique();
             $table->string('password');
-            $table->string('role');
+            $table->string('role')->default('user');
             $table->string('google_id')->nullable();
             $table->string('facebook_id')->nullable();
             $table->string('avatar', 500)->nullable();
+            $table->timestamp('banned_until')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         // Gọi các seeder theo đúng thứ tự phụ thuộc
         $this->call([
             UsersSeeder::class,
-            CategoriesSeeder::class, 
+            CategoriesSeeder::class,
             PostsSeeder::class,
             FollowsSeeder::class,
             MessagesSeeder::class,
@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             CommentsSeeder::class,
             MessageReadsSeeder::class,
             MentionsSeeder::class,
+            PostVotesSeeder::class,
+            ReportsSeeder::class,
             // Các bảng report không có dữ liệu mẫu nên không cần gọi seeder
         ]);
     }

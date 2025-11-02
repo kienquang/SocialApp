@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // Thêm các use statement cần thiết
+
+use Attribute;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -26,6 +28,7 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
         'google_id',      // Dùng cho Socialite
         'facebook_id',    // Dùng cho Socialite
         'avatar',
+        'banned_until',
         // 'role' KHÔNG nên có ở đây.
         // Đây là một biện pháp bảo mật để ngăn người dùng tự gán 'admin' khi đăng ký.
     ];
@@ -47,15 +50,42 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'is_banned' => 'boolean',
         // 'password' => 'hashed', // Dùng cho L10/L11. Bỏ qua nếu bạn dùng L8/L9
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Mối quan hệ (Relationships)
-    |--------------------------------------------------------------------------
-    */
+    /**
+     * "Accessor" (Hàm truy cập) ảo: $user->is_banned
+     * Tự động kiểm tra xem user có đang bị ban hay không.
+     */
+    public function getIsBannedAttribute()
+    {
+        // 1. Nếu không có giá trị (null), user (người dùng) không bị ban (khóa).
+        if (!$this->banned_until) {
+            return false;
+        }
 
+        $bannedUntilDate = null;
+
+        // 2. Kiểm tra xem nó đã là đối tượng (object) Carbon chưa
+        if ($this->banned_until instanceof \Illuminate\Support\Carbon) {
+            // Nếu ĐÚNG: Gán luôn
+            $bannedUntilDate = $this->banned_until;
+        } else {
+            // 3. (Đây là LỖI của bạn) Nếu nó vẫn là string (chuỗi)
+            // Chúng ta phải tự "parse" (phân tích) nó thành Carbon
+            try {
+                $bannedUntilDate = \Illuminate\Support\Carbon::parse($this->banned_until);
+            } catch (\Exception $e) {
+                // (Phòng trường hợp string (chuỗi) bị hỏng, ví dụ: "abcde")
+                return false;
+            }
+        }
+
+        // 4. (OK) Bây giờ $bannedUntilDate chắc chắn là Carbon,
+        // chúng ta có thể gọi ->isFuture() một cách an toàn.
+        return $bannedUntilDate->isFuture();
+    }
     /**
      * Lấy tất cả bài viết của người dùng.
      */
@@ -189,6 +219,6 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
                     ->withTimestamps();
     }
 
-    
+
 }
 

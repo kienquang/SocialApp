@@ -37,12 +37,14 @@ class PostController extends Controller
             'limit' => 'sometimes|integer|min:1|max:50' ,
             'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
             'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
+            'user_id' => 'nullable|integer|exists:users,id',
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
         $limit = $request->query('limit', 10);
         $categoryId = $request->query('category'); // (MỚI)
         $searchTerm = $request->input('q');
+        $userId = $request->query('user_id', null);
 
         /** @var Builder $query */
         $query = Post::query();
@@ -59,24 +61,22 @@ class PostController extends Controller
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
 
-        // (MỚI) 3. Lọc theo Category nếu có
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
-        }
-        // 6. (MỚI) Tìm kiếm (Searching)
+        // 5. Lọc (Filter) (Search (Tìm kiếm), Category (Chuyên mục), VÀ User (Người dùng))
         if ($searchTerm) {
-            // Bao bọc trong where() để logic AND/OR không bị lẫn
             $query->where(function ($subQuery) use ($searchTerm) {
                 $likeTerm = '%' . $searchTerm . '%';
-                // Tìm theo Tiêu đề BÀI VIẾT
                 $subQuery->where('title', 'LIKE', $likeTerm)
-                         // HOẶC tìm theo Nội dung BÀI VIẾT (có thể chậm)
                          ->orWhere('content_html', 'LIKE', $likeTerm)
-                         // HOẶC tìm theo Tên TÁC GIẢ
                          ->orWhereHas('user', function ($userQuery) use ($likeTerm) {
                              $userQuery->where('name', 'LIKE', $likeTerm);
                          });
             });
+        }
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        if ($userId) { // <-- (MỚI)
+            $query->where('user_id', $userId);
         }
 
         // 4. Sắp xếp

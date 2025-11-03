@@ -13,14 +13,21 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('messages', function (Blueprint $table) {
+        Schema::create('user_notifications', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            
+            $table->foreignId('notification_id')->constrained('notifications')->onDelete('cascade');
+
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->text('content');
-            $table->string('image_url')->nullable();
-            $table->timestamp('created_at')->useCurrent();
+
+            $table->timestamp('read_at')->nullable(); // NULL = chưa đọc
+
+            $table->timestamps();
+
+            $table->unique(['user_id', 'notification_id']);
         });
+
     }
 
     /**
@@ -30,6 +37,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('messages');
+        Schema::dropIfExists('user_notifications');
     }
 };

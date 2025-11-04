@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id(); // Tương đương bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY
             $table->string('name', 100); // Đã đổi từ username
             $table->string('email', 150)->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('user');
             $table->string('google_id')->nullable();

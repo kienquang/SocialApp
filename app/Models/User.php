@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens; // <-- Rất quan trọng cho API
 
-class User extends Authenticatable // implements MustVerifyEmail (nếu bạn cần xác thực email)
+class User extends Authenticatable implements MustVerifyEmail// implements MustVerifyEmail (nếu bạn cần xác thực email)
 {
     // Sử dụng các Trait
     use HasApiTokens, HasFactory, Notifiable;

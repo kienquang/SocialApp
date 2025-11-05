@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('google_id')->nullable();
             $table->string('facebook_id')->nullable();
             $table->string('avatar', 500)->nullable();
+            $table->string('cover_photo_url', 500)->nullable();
             $table->timestamp('banned_until')->nullable();
             $table->rememberToken();
             $table->timestamps();

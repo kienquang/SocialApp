@@ -69,8 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/posts/{post}/upvote', [PostVoteController::class, 'upvote']);
     Route::post('/posts/{post}/downvote', [PostVoteController::class, 'downvote']);
 
-    // ---  CẬP NHẬT AVATAR ---
+    // ---  CẬP NHẬT AVATAR, COVER-PHOTO ---
     Route::post('/user/avatar', [UserProfileController::class, 'updateAvatar']);
+    Route::post('/user/cover-photo', [UserProfileController::class, 'updateCoverPhoto']);
 
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
@@ -121,6 +122,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 
         // Xem Lịch sử Kiểm duyệt (Moderation History) của 1 User
         Route::get('/users/{user}/moderation-history', [UserManagementController::class, 'getModerationHistory']);
+        // Lấy (Get) danh sách (list) user (người dùng) bị ban (khóa)
+        Route::get('/users/banned', [UserManagementController::class, 'getBannedList']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CommentResource;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\ReportUserResource;
+use App\Http\Resources\UserResource;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Report_user;
@@ -15,6 +16,23 @@ use Illuminate\Support\Carbon;
 
 class UserManagementController extends Controller
 {
+    /**
+     * (MỚI) Lấy danh sách (list) các user (người dùng) đang bị ban (khóa).
+     */
+    public function getBannedList(Request $request)
+    {
+        $limit = $request->input('limit', 20); // Mặc định 20
+
+        // 1. Lấy (Fetch) các user (người dùng) có 'banned_until' (ban đến khi) không rỗng (null)
+        //    VÀ ngày đó ở trong tương lai
+        $bannedUsers = User::whereNotNull('banned_until')
+                            ->where('banned_until', '>', now())
+                            ->orderBy('banned_until', 'asc') // Ưu tiên (priority) người sắp hết ban (khóa)
+                            ->paginate($limit);
+
+        // 2. Trả về (Return) bằng UserResource (Định dạng Người dùng) (để bao gồm cả 'banned_until' (ban đến khi))
+        return UserResource::collection($bannedUsers);
+    }
     /**
      * (MỚI) Lấy lịch sử kiểm duyệt (danh sách sai phạm) của một người dùng.
      * Chỉ Admin mới có thể truy cập.

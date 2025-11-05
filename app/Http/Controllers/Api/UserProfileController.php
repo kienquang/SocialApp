@@ -52,4 +52,28 @@ class UserProfileController extends Controller
             ], 500);
         }
     }
+
+    public function updateCoverPhoto(Request $request)
+    {
+        $validated = $request->validate([
+            'cover_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Cho phép 5MB
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Tải (Upload) lên (on) Cloudinary, lưu vào thư mục (folder) 'user_covers'
+        $uploadedFile = $validated['cover_photo']->storeOnCloudinary('user_covers');
+
+        // Lấy URL (Đường link) an toàn
+        $coverPhotoUrl = $uploadedFile->getSecurePath();
+
+        // Cập nhật (Update) CSDL (Database)
+        $user->update([
+            'cover_photo_url' => $coverPhotoUrl,
+        ]);
+
+        // Trả về (Return) toàn bộ UserResource (Định dạng Người dùng) đã cập nhật (updated)
+        return new UserResource($user);
+    }
 }

@@ -18,7 +18,9 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'avatar' => $this->avatar,
+            'cover_photo_url' => $this->cover_photo_url,
             'created_at' => $this->created_at,
+            'banned_until' => $this->when($this->is_banned, $this->banned_until),
         ];
     }
 }

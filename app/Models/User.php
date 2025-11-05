@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
         'google_id',      // Dùng cho Socialite
         'facebook_id',    // Dùng cho Socialite
         'avatar',
+        'cover_photo_url',
         'banned_until',
         // 'role' KHÔNG nên có ở đây.
         // Đây là một biện pháp bảo mật để ngăn người dùng tự gán 'admin' khi đăng ký.

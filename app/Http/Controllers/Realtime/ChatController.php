@@ -9,6 +9,7 @@ use App\Models\Message;
 use App\Events\MessageSent;
 use App\Models\Conversation;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class ChatController extends Controller
 {
@@ -33,9 +34,7 @@ class ChatController extends Controller
                 'name' => $otherUser->name,
                 'avatar' => $otherUser->avatar
             ],
-            'last_message' => $conv->lastMessage ? $conv->lastMessage->message : null,
-            'last_message_image' => $conv->lastMessage ? $conv->lastMessage->image : null,
-            'last_message_at' => $conv->lastMessage ? $conv->lastMessage->created_at->toDateTimeString() : null
+            'last_message_id' => $conv->last_message_id ? $conv->last_message_id : null,
         ];
     });
 
@@ -60,6 +59,17 @@ class ChatController extends Controller
                         })
                         ->orderBy('created_at', 'asc')
                         ->get();
+
+        DB::table('conversations')
+            ->where(function ($query) use ($userId, $receiverId) {
+                $query->where('user_one_id', $userId)
+                      ->where('user_two_id', $receiverId);
+            })
+            ->orWhere(function ($query) use ($userId, $receiverId) {
+                $query->where('user_one_id', $receiverId)
+                      ->where('user_two_id', $userId);
+            })
+            ->update(['last_read_message_id' => $messages->last()->id]);
 
         return response()->json($messages);
     }

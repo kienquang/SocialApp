@@ -16,6 +16,7 @@ return new class extends Migration
 
             // Tin nhắn cuối cùng (dùng để load nhanh danh sách chat)
             $table->unsignedBigInteger('last_message_id')->nullable();
+            $table->unsignedBigInteger('last_read_message_id')->nullable();
 
             $table->timestamps();
 

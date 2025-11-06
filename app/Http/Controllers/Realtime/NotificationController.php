@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\DistributeNotification;
+use App\Jobs\MarkAllNotificationsRead;
 
 class NotificationController extends Controller
 {
@@ -54,5 +55,13 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
+    //đánh dâu tất cả đã đọc
+    public function markAllRead()
+    {
+        //xếp job vào queue 
+        MarkAllNotificationsRead::dispatch(auth()->id());
+
+        return response()->json(['status' => 'queued']);
+    }
     
 }

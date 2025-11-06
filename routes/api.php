@@ -50,6 +50,9 @@ Route::get('/profiles/{user}', [ProfileController::class, 'show']);
 Route::get('/profiles/{user}/followers', [ProfileController::class, 'getFollowers']);
 Route::get('/profiles/{user}/following', [ProfileController::class, 'getFollowing']);
 
+// Search (Tìm kiếm) User (Người dùng)
+Route::get('/users/search', [ProfileController::class, 'search'])->name('users.search');
+
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
     Route::post('/posts', [PostController::class, 'store']);

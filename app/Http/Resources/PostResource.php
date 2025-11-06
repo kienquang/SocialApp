@@ -33,6 +33,12 @@ class PostResource extends JsonResource
             }
         }
 
+        // (LOGIC (LOGIC) MỚI) --- XỬ LÝ (HANDLE) IS_FOLLOWING_AUTHOR (TRẠNG THÁI THEO DÕI TÁC GIẢ) ---
+        $isFollowingAuthor = $this->is_following_author; // Lấy (Get) thuộc tính "ảo" (virtual)
+        // Nếu thuộc tính (property) không tồn tại (exist) (ví dụ: khi gọi (call) từ `index`), mặc định (default) là false (sai)
+        if ($isFollowingAuthor === null) {
+            $isFollowingAuthor = false;
+        }
 
         return [
             'id' => $this->id,
@@ -62,6 +68,9 @@ class PostResource extends JsonResource
 
             // Trạng thái vote của user hiện tại
             'user_vote' => (int) $userVote, // 1, -1, hoặc 0
+
+            //Trạng thái (Status) theo dõi (follow) của user (người dùng) hiện tại đối với tác giả (author)
+            'is_following_author' => (bool) $isFollowingAuthor,
 
             // Bình luận (chỉ khi xem chi tiết)
             'comments' => CommentResource::collection($this->whenLoaded('comments')),

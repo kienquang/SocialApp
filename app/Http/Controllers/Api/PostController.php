@@ -186,6 +186,12 @@ class PostController extends Controller
             $post->load(['votes' => function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             }]);
+            // (LOGIC (LOGIC) MỚI) 6. Tính toán (Calculate) `is_following_author` (trạng thái theo dõi tác giả)
+            $isFollowing = $user->following()->where('followed_id', $post->user_id)->exists();
+            $post->is_following_author = $isFollowing; // Thêm (Add) thuộc tính "ảo" (virtual)
+        } else {
+            // Nếu là khách (guest), mặc định (default) là false (sai)
+            $post->is_following_author = false;
         }
 
         return new PostResource($post);

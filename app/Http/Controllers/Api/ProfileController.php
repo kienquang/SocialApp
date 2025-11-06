@@ -6,11 +6,34 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ProfileResource; // (Chúng ta sẽ tạo file này ở Bước 2)
+use App\Http\Resources\UserSearchResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
+    /**
+         * (MỚI) Tìm kiếm (Search) user (người dùng) theo tên.
+         */
+        public function search(Request $request)
+        {
+            $validated = $request->validate([
+                'q' => 'required|string|min:2|max:100', // Bắt buộc phải có 'q'
+                'limit' => 'sometimes|integer|min:1|max:20' // Giới hạn (Limit)
+            ]);
+
+            $searchTerm = $validated['q'];
+            $limit = $validated['limit'] ?? 5; // Mặc định (Default) lấy 5
+
+            $users = User::where('name', 'LIKE', '%' . $searchTerm . '%')
+                        // Chỉ tìm user (người dùng) 'user', không tìm 'admin' (quản trị viên)
+                        ->where('role', 'user')
+                        ->limit($limit)
+                        ->get();
+
+            // Dùng Resource (Định dạng) "nhẹ" (lightweight) mới
+            return UserSearchResource::collection($users);
+        }
     /**
      * Hiển thị thông tin hồ sơ (profile) chính của người dùng.
      * Bao gồm: Tên, avatar, bio, và SỐ LƯỢNG (counts).

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
+<<<<<<< HEAD
 
     protected $fillable = [
         'sender_id',
@@ -27,4 +28,6 @@ class Message extends Model
     {
         return $this->belongsTo(User::class, 'receiver_id');
     }
+=======
+>>>>>>> origin/kienBranch
 }

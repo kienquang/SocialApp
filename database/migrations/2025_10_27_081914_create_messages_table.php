@@ -18,8 +18,12 @@ return new class extends Migration
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->text('content');
+<<<<<<< HEAD
             $table->string('image_url')->nullable();
             $table->timestamp('created_at')->useCurrent();
+=======
+            $table->timestamps();
+>>>>>>> origin/kienBranch
         });
     }
 

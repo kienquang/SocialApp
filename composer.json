@@ -11,7 +11,11 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+<<<<<<< HEAD
         "pusher/pusher-php-server": "^7.2"
+=======
+        "mews/purifier": "^3.4"
+>>>>>>> origin/kienBranch
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

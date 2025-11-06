@@ -2,6 +2,13 @@
 
 namespace App\Providers;
 
+<<<<<<< HEAD
+=======
+use App\Models\Comment;
+use App\Models\Post;
+use App\Policies\CommentPolicy;
+use App\Policies\PostPolicy;
+>>>>>>> origin/kienBranch
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
@@ -14,6 +21,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+<<<<<<< HEAD
+=======
+        Post::class => PostPolicy::class,
+        Comment::class => CommentPolicy::class,
+>>>>>>> origin/kienBranch
     ];
 
     /**

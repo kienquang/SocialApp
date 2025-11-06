@@ -17,7 +17,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('follower_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('followed_id')->constrained('users')->onDelete('cascade');
+<<<<<<< HEAD
             $table->timestamp('created_at')->useCurrent();
+=======
+            $table->timestamps();
+>>>>>>> origin/kienBranch
         });
     }
 

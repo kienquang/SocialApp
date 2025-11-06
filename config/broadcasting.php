@@ -15,7 +15,11 @@ return [
     |
     */
 
+<<<<<<< HEAD
     'default' => env('BROADCAST_DRIVER', 'pusher'),
+=======
+    'default' => env('BROADCAST_DRIVER', 'null'),
+>>>>>>> origin/kienBranch
 
     /*
     |--------------------------------------------------------------------------

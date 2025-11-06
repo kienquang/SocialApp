@@ -18,6 +18,19 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('title')->nullable();
             $table->longText('content_html');
+<<<<<<< HEAD
+=======
+            $table->foreignId('category_id')
+                  ->nullable()
+                  ->constrained('categories')
+                  ->onDelete('set null');
+
+            // Cột Thumbnail
+            $table->string('thumbnail_url', 500)->nullable();
+            // 'published' (công khai), 'removed' (bị gỡ), 'draft' (bản nháp)
+            // ->index() là để tối ưu hóa hiệu suất (như đã thảo luận)
+            $table->string('status', 50)->default('published')->index();
+>>>>>>> origin/kienBranch
             $table->timestamps();
         });
     }

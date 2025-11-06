@@ -11,6 +11,34 @@ use Illuminate\Validation\Rules\File; // Sử dụng File rule
 class UserProfileController extends Controller
 {
     /**
+         * (MỚI) Cập nhật (Update) các chi tiết (details) (như 'name' (tên)) của user (người dùng)
+         */
+        public function updateProfile(Request $request)
+        {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            // Validate (Xác thực) (chỉ cho phép (allow) đổi (change) 'name' (tên))
+            $validated = $request->validate([
+                'name' => [
+                    'required',
+                    'string',
+                    'max:100',
+                    // (Tùy chọn) Đảm bảo tên mới không trùng
+                    // Rule (Quy tắc)::unique('users')->ignore($user->id),
+                ],
+                // (Sau này bạn có thể thêm (add) 'bio' (tiểu sử), 'location' (vị trí)... vào đây)
+            ]);
+
+            // Cập nhật (Update) user (người dùng)
+            $user->update([
+                'name' => $validated['name'],
+            ]);
+
+            // Trả về (Return) UserResource (Định dạng Người dùng) đã được cập nhật (update)
+            return new UserResource($user);
+        }
+    /**
      * Cập nhật ảnh đại diện (avatar) của người dùng
      *
      * @param  \Illuminate\Http\Request  $request

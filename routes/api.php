@@ -76,6 +76,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/avatar', [UserProfileController::class, 'updateAvatar']);
     Route::post('/user/cover-photo', [UserProfileController::class, 'updateCoverPhoto']);
 
+    // Cập nhật (Update) chi tiết (details) (tên, v.v.)
+    Route::patch('/profile/details', [UserProfileController::class, 'updateProfile']);
+
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
 

@@ -17,10 +17,25 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'avatar' => $this->avatar,
+            'avatar' => $this->optimizeUrl($this->avatar, 'avatar'),
             'cover_photo_url' => $this->cover_photo_url,
             'created_at' => $this->created_at,
             'banned_until' => $this->when($this->is_banned, $this->banned_until),
         ];
+    }
+
+    /**
+     * (MỚI) Hàm (Function) Helper (Hỗ trợ) Tối ưu (Optimize) URL (Đường dẫn) Cloudinary
+     */
+    private function optimizeUrl($url)
+    {
+        if (!$url) {
+            return null;
+        }
+
+        // (SỬA) Đổi (Change) thành 'eco' (Tiết kiệm) để nén (compress) mạnh hơn
+        $transformations = 'q_auto:eco,f_auto';
+
+        return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }
 }

@@ -17,7 +17,19 @@ class UserSearchResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'avatar' => $this->avatar,
+            'avatar' => $this->optimizeUrl($this->avatar),
         ];
+    }
+    /**
+     * (MỚI) Hàm (Function) Helper (Hỗ trợ) Tối ưu (Optimize) URL (Đường dẫn) Cloudinary
+     */
+    private function optimizeUrl($url)
+    {
+        if (!$url) {
+            return null;
+        }
+        // (SỬA) Đổi (Change) thành 'eco' (Tiết kiệm)
+        $transformations = 'q_auto:eco,f_auto';
+        return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }
 }

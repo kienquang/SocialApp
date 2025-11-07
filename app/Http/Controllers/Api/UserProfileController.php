@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use CloudinaryLabs\CloudinaryLaravel\MediaAlly;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\File; // Sử dụng File rule
 
 class UserProfileController extends Controller
 {
+    use MediaAlly;
     /**
          * (MỚI) Cập nhật (Update) các chi tiết (details) (như 'name' (tên)) của user (người dùng)
          */
@@ -46,62 +48,71 @@ class UserProfileController extends Controller
      */
     public function updateAvatar(Request $request)
     {
-        // 1. Validate file ảnh
+        // (SỬA) Dùng 'avatar' (ảnh đại diện) (từ file (tệp) 03) và `File::image()`
         $validated = $request->validate([
-            // 'file' là key mà frontend phải gửi lên
-            // Tương tự ImageUploadController nhưng có thể nhẹ hơn
-            'file' => [
+            'avatar' => [
                 'required',
-                File::image() // Quy tắc validate ảnh
-                    ->max(2 * 1024), // Tối đa 2MB
+                File::image()
+                    ->max(5 * 1024), // 5MB
             ],
         ]);
 
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $user = $request->user();
 
-        // 2. Tải ảnh lên Cloudinary
         try {
-            // Tải file lên Cloudinary, nhưng lưu vào thư mục 'user_avatars'
-            $uploadedFile = $validated['file']->storeOnCloudinary('user_avatars');
+            // (SỬA) Dùng `storeOnCloudinary`
+            $uploadedFile = $validated['avatar']->storeOnCloudinary('user_avatars', [
+                // (THÊM LẠI) Logic (Logic) Tối ưu (Optimize)
+                'transformation' => [
+                    'quality' => 'auto:eco',
+                    'fetch_format' => 'auto'
+                ]
+            ]);
 
             $url = $uploadedFile->getSecurePath();
-
-            // 3. CẬP NHẬT TRỰC TIẾP vào CSDL
             $user->update(['avatar' => $url]);
 
-            // 4. Trả về URL mới (hoặc toàn bộ user object)
-            return new UserResource($user);
+            // (LOGIC (LOGIC) CỦA BẠN) Trả về (Return) UserResource (Định dạng Người dùng)
+            return new UserResource($user->fresh());
 
         } catch (\Exception $e) {
-            // Xử lý nếu upload thất bại
             return response()->json([
                 'message' => 'Upload thất bại: ' . $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * Cập nhật (Update) ảnh bìa (cover photo) của user (người dùng)
+     * (Dùng logic (logic) `storeOnCloudinary` của bạn)
+     */
     public function updateCoverPhoto(Request $request)
     {
+        // (SỬA) Dùng 'cover' (ảnh bìa) (từ file (tệp) 03)
         $validated = $request->validate([
-            'cover_photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Cho phép 5MB
+            'cover' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240', // 10MB
         ]);
 
         /** @var \App\Models\User $user */
-        $user = Auth::user();
+        $user = $request->user();
 
-        // Tải (Upload) lên (on) Cloudinary, lưu vào thư mục (folder) 'user_covers'
-        $uploadedFile = $validated['cover_photo']->storeOnCloudinary('user_covers');
+        // (SỬA) Dùng 'cover' (ảnh bìa)
+        $uploadedFile = $validated['cover']->storeOnCloudinary('user_covers', [
+             // (THÊM LẠI) Logic (Logic) Tối ưu (Optimize)
+            'transformation' => [
+                'quality' => 'auto:eco',
+                'fetch_format' => 'auto'
+            ]
+        ]);
 
-        // Lấy URL (Đường link) an toàn
         $coverPhotoUrl = $uploadedFile->getSecurePath();
 
-        // Cập nhật (Update) CSDL (Database)
         $user->update([
             'cover_photo_url' => $coverPhotoUrl,
         ]);
 
-        // Trả về (Return) toàn bộ UserResource (Định dạng Người dùng) đã cập nhật (updated)
-        return new UserResource($user);
+        // (LOGIC (LOGIC) CỦA BẠN) Trả về (Return) UserResource (Định dạng Người dùng)
+        return new UserResource($user->fresh());
     }
 }

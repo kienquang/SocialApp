@@ -43,7 +43,7 @@ class PostResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'thumbnail_url' => $this->thumbnail_url,
+            'thumbnail_url' => $this->optimizeUrl($this->thumbnail_url),
             'content_html' => $this->when($request->routeIs('posts.show'), $this->content_html), // Chỉ hiển thị content khi xem chi tiết
             'category' => new CategoryResource($this->whenLoaded('category')),
             'created_at' => $this->created_at,
@@ -75,5 +75,14 @@ class PostResource extends JsonResource
             // Bình luận (chỉ khi xem chi tiết)
             'comments' => CommentResource::collection($this->whenLoaded('comments')),
         ];
+    }
+    private function optimizeUrl($url)
+    {
+        if (!$url) {
+            return null;
+        }
+        // (SỬA) Đổi (Change) thành 'eco' (Tiết kiệm)
+        $transformations = 'q_auto:eco,f_auto';
+        return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }
 }

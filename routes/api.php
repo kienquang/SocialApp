@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
+use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
@@ -52,6 +54,9 @@ Route::get('/profiles/{user}/following', [ProfileController::class, 'getFollowin
 
 // Search (Tìm kiếm) User (Người dùng)
 Route::get('/users/search', [ProfileController::class, 'search'])->name('users.search');
+
+// API (API) (Giao diện lập trình ứng dụng) Lấy (Get) Quảng cáo (Ad) (Public (Công khai))
+Route::get('/advertisements', [AdvertisementController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -132,6 +137,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::get('/users/{user}/moderation-history', [UserManagementController::class, 'getModerationHistory']);
         // Lấy (Get) danh sách (list) user (người dùng) bị ban (khóa)
         Route::get('/users/banned', [UserManagementController::class, 'getBannedList']);
+
+        // để xử lý (handle) file (tệp) upload (tải lên) trên (on) 'update' (cập nhật)
+        Route::get('/advertisements', [AdminAdvertisementController::class, 'index']);
+        Route::post('/advertisements', [AdminAdvertisementController::class, 'store']);
+        // (SỬA) Dùng (Use) POST (Gửi) cho update (cập nhật) để hỗ trợ (support) `form-data` (dữ liệu biểu mẫu) (file (tệp) upload (tải lên))
+        Route::post('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'update']);
+        Route::delete('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'destroy']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

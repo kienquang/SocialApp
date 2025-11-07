@@ -7,7 +7,10 @@ use App\Http\Resources\UserResource;
 use CloudinaryLabs\CloudinaryLaravel\MediaAlly;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\File; // Sử dụng File rule
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserProfileController extends Controller
 {
@@ -15,7 +18,7 @@ class UserProfileController extends Controller
     /**
          * (MỚI) Cập nhật (Update) các chi tiết (details) (như 'name' (tên)) của user (người dùng)
          */
-        public function updateProfile(Request $request)
+    public function updateProfile(Request $request)
         {
             /** @var \App\Models\User $user */
             $user = Auth::user();
@@ -39,7 +42,47 @@ class UserProfileController extends Controller
 
             // Trả về (Return) UserResource (Định dạng Người dùng) đã được cập nhật (update)
             return new UserResource($user);
+    }
+
+    /**
+     * (MỚI) Cập nhật (Update) mật khẩu (password) của user (người dùng)
+     */
+    public function updatePassword(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        // 1. Validate (Xác thực) (bao gồm (including) cả mật khẩu (password) mới)
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => [
+                'required',
+                'string',
+                Password::defaults(), // Áp dụng (Apply) quy tắc (rule) phức tạp (mặc định (default) của Laravel)
+                'confirmed', // Phải khớp (match) với 'password_confirmation'
+                'different:current_password' // Mật khẩu (Password) mới phải khác (different) mật khẩu (password) cũ
+            ],
+        ]);
+
+        // 2. (QUAN TRỌNG) Kiểm tra (Check) xem 'current_password' (mật khẩu hiện tại) có đúng không
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Mật khẩu hiện tại không chính xác.'
+            ]);
         }
+
+        // 3. Cập nhật (Update) mật khẩu (password) mới
+        $user->update([
+            'password' => Hash::make($validated['password'])
+        ]);
+
+        // (Tùy chọn: Xóa (Delete) tất cả các token (mã) khác để bảo mật (security))
+        // $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
+
+        return response()->json([
+            'message' => 'Mật khẩu đã được cập nhật (updated) thành công.'
+        ]);
+    }
     /**
      * Cập nhật ảnh đại diện (avatar) của người dùng
      *

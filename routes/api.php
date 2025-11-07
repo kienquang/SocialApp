@@ -78,6 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Cập nhật (Update) chi tiết (details) (tên, v.v.)
     Route::patch('/profile/details', [UserProfileController::class, 'updateProfile']);
+    //  đổi (change) mật khẩu (password)
+    Route::patch('/profile/password', [UserProfileController::class, 'updatePassword']);
 
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);

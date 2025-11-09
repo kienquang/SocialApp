@@ -119,8 +119,6 @@ return [
     |
     */
 
-<<<<<<< HEAD
-=======
     'redis' => [
 
         'client' => env('REDIS_CLIENT', 'phpredis'),
@@ -150,5 +148,4 @@ return [
 
     ],
 
->>>>>>> origin/kienBranch
 ];

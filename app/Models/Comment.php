@@ -2,21 +2,15 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-=======
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
->>>>>>> origin/kienBranch
+use App\Models\User;
 
 class Comment extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
 
     /**
      * Các trường được phép gán hàng loạt.
@@ -47,5 +41,4 @@ class Comment extends Model
     }
 
 
->>>>>>> origin/kienBranch
 }

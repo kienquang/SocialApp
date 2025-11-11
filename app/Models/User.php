@@ -2,20 +2,6 @@
 
 namespace App\Models;
 
-<<<<<<< HEAD
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-
-class User extends Authenticatable
-{
-    use HasApiTokens, HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-=======
 // Thêm các use statement cần thiết
 
 use Attribute;
@@ -32,23 +18,10 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
 
     /**
      * Các trường được phép gán hàng loạt (mass-assignable).
->>>>>>> origin/kienBranch
      *
      * @var array<int, string>
      */
     protected $fillable = [
-<<<<<<< HEAD
-        'name', 
-        'email',
-        'password',
-        'google_id',
-        'facebook_id',
-        'avatar',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-=======
         'name',
         'email',
         'password',
@@ -63,7 +36,6 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
 
     /**
      * Các trường nên được ẩn khi trả về JSON.
->>>>>>> origin/kienBranch
      *
      * @var array<int, string>
      */
@@ -73,21 +45,12 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
     ];
 
     /**
-<<<<<<< HEAD
-     * The attributes that should be cast.
-=======
      * Các trường nên được ép kiểu (cast).
->>>>>>> origin/kienBranch
      *
      * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-<<<<<<< HEAD
-    ];
-
-}
-=======
         'is_banned' => 'boolean',
         // 'password' => 'hashed', // Dùng cho L10/L11. Bỏ qua nếu bạn dùng L8/L9
     ];
@@ -260,4 +223,3 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
 
 }
 
->>>>>>> origin/kienBranch

@@ -18,11 +18,7 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
             $table->foreignId('reporter_id')->constrained('users')->onDelete('cascade');
             $table->text('reason');
-<<<<<<< HEAD
-            $table->timestamp('created_at')->useCurrent();
-=======
             $table->timestamps();
->>>>>>> origin/kienBranch
         });
     }
 

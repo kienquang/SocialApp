@@ -35,14 +35,11 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
-<<<<<<< HEAD
 
             Route::middleware('api')
                 ->prefix('realtime')
                 ->group(base_path('routes/realtime.php'));
 
-=======
->>>>>>> origin/kienBranch
         });
     }
 

@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Report_user extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
     protected $fillable = [
         'reported_user_id',
         'reporter_id',
@@ -25,5 +23,4 @@ class Report_user extends Model
     {
         return $this->belongsTo(User::class, 'reported_user_id');
     }
->>>>>>> origin/kienBranch
 }

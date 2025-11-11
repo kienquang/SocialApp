@@ -151,6 +151,7 @@ class PostController extends Controller
         // 'voters' sẽ là collection rỗng (vì chưa ai vote)
         $post->load('voters');
 
+        
         return (new PostResource($post))
                 ->response()
                 ->setStatusCode(201); // 201 Created

@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Report_comment extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
     protected $fillable = [
         'comment_id',
         'reporter_id',
@@ -25,5 +23,4 @@ class Report_comment extends Model
     {
         return $this->belongsTo(Comment::class, 'comment_id');
     }
->>>>>>> origin/kienBranch
 }

@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Report_post extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
     protected $fillable = [
         'post_id',
         'reporter_id',
@@ -34,5 +32,4 @@ class Report_post extends Model
         // (Chúng ta sẽ dùng logic này ở Phần 2)
         return $this->belongsTo(Post::class, 'post_id');
     }
->>>>>>> origin/kienBranch
 }

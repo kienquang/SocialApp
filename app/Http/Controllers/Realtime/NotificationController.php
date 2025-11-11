@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Realtime;
 
+use App\Events\PostCreated;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
-use App\Events\PostNotificationSent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +34,7 @@ class NotificationController extends Controller
         DistributeNotification::dispatch($notification->id, $recipientIds);
 
         // broadcast đến client qua Pusher
-        broadcast(new PostNotificationSent($notification));
+        broadcast(new PostCreated($notification));
 
         return response()->json(['status' => 'queued']);
     }
@@ -49,8 +49,7 @@ class NotificationController extends Controller
             ->where('un.user_id', $userId)
             ->select('n.id', 'n.sender_id', 'n.data', 'n.created_at', 'un.read_at')
             ->orderByDesc('n.created_at')
-            ->paginate(20
-        );
+            ->paginate(20);
 
         return response()->json($notifications);
     }

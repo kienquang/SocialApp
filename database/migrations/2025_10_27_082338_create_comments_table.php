@@ -20,12 +20,8 @@ return new class extends Migration
             // Khóa ngoại tự tham chiếu đến chính nó (cho comment trả lời)
             $table->foreignId('parent_id')->nullable()->constrained('comments')->onDelete('cascade');
             $table->text('content');
-<<<<<<< HEAD
-            $table->timestamp('created_at')->useCurrent();
-=======
             $table->string('status', 50)->default('published')->index();
             $table->timestamps();
->>>>>>> origin/kienBranch
         });
     }
 

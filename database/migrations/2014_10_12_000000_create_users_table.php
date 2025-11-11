@@ -17,12 +17,6 @@ return new class extends Migration
             $table->id(); // Tương đương bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY
             $table->string('name', 100); // Đã đổi từ username
             $table->string('email', 150)->unique();
-<<<<<<< HEAD
-            $table->string('password');
-            $table->string('google_id')->nullable();
-            $table->string('facebook_id')->nullable();
-            $table->string('avatar', 500)->nullable();
-=======
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default('user');
@@ -31,7 +25,6 @@ return new class extends Migration
             $table->string('avatar', 500)->nullable();
             $table->string('cover_photo_url', 500)->nullable();
             $table->timestamp('banned_until')->nullable();
->>>>>>> origin/kienBranch
             $table->rememberToken();
             $table->timestamps();
         });

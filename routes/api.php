@@ -1,7 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
 use App\Http\Controllers\Api\CategoryController;
@@ -15,7 +13,6 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use App\Http\Controllers\Api\UserProfileController;
->>>>>>> origin/kienBranch
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,8 +33,6 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 require __DIR__.'/auth.php';
 
-<<<<<<< HEAD
-=======
 // --- Route Public (Ai cũng xem được) ---
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
@@ -146,4 +141,3 @@ Route::middleware(['auth:sanctum', 'role:superadmin'])
 
 
 
->>>>>>> origin/kienBranch

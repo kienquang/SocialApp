@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-
+use Database\Seeders\UsersSeeder;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -14,10 +14,7 @@ class DatabaseSeeder extends Seeder
         // Gọi các seeder theo đúng thứ tự phụ thuộc
         $this->call([
             UsersSeeder::class,
-<<<<<<< HEAD
-=======
             CategoriesSeeder::class,
->>>>>>> origin/kienBranch
             PostsSeeder::class,
             FollowsSeeder::class,
             MessagesSeeder::class,
@@ -25,11 +22,8 @@ class DatabaseSeeder extends Seeder
             CommentsSeeder::class,
             MessageReadsSeeder::class,
             MentionsSeeder::class,
-<<<<<<< HEAD
-=======
             PostVotesSeeder::class,
             ReportsSeeder::class,
->>>>>>> origin/kienBranch
             // Các bảng report không có dữ liệu mẫu nên không cần gọi seeder
         ]);
     }

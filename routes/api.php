@@ -38,8 +38,10 @@ require __DIR__.'/auth.php';
 // --- Route Public (Ai cũng xem được) ---
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+//  Lấy (Get) Bình luận (Comment)cho một (a) Bài viết (Post)
+Route::get('/posts/{post}/comments', [CommentController::class, 'getForPost']);
 
-// API MỚI: Lấy các phản hồi của 1 bình luận
+// API Lấy các phản hồi của 1 bình luận
 Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
 
 // Lấy danh sách chuyên mục

@@ -72,8 +72,6 @@ class PostResource extends JsonResource
             //Trạng thái (Status) theo dõi (follow) của user (người dùng) hiện tại đối với tác giả (author)
             'is_following_author' => (bool) $isFollowingAuthor,
 
-            // Bình luận (chỉ khi xem chi tiết)
-            'comments' => CommentResource::collection($this->whenLoaded('comments')),
         ];
     }
     private function optimizeUrl($url)

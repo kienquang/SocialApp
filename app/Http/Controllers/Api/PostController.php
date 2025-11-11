@@ -171,14 +171,6 @@ class PostController extends Controller
         $post->loadCount('allComments as comments_count');
         $post->loadSum('votes as vote_score', 'vote');
 
-        // Tải bình luận GỐC (phân trang)
-        $post->load([
-            'comments' => function ($query) {
-                $query->with('user') // Tải tác giả của bình luận
-                      ->withCount('replies as replies_count') // Đếm số phản hồi
-                      ->orderBy('created_at', 'asc'); // Cũ nhất trước
-            }
-        ]);
 
         $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)

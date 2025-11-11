@@ -8,6 +8,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -28,6 +29,15 @@ class PostCreated implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('notifications.all'); // broadcast chung 1 lần
+        return new Channel('notifications'); // broadcast chung 1 lần
+    }
+    public function broadcastWith()
+    {
+        return [
+            'id' => $this->post->id,
+            'title' => $this->post->title,
+            'author_id' => $this->post->user_id,
+            'created_at' => $this->post->created_at->toDateTimeString(),
+        ];
     }
 }

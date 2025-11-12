@@ -7,5 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-    use HasFactory;
+     protected $fillable = ['sender_id', 'type', 'data'];
+
+    public $timestamps = false;
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_notifications')
+                    ->withPivot('read_at')
+                    ->withTimestamps();
+    }
 }

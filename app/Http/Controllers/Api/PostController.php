@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate; // Dùng cho Policy
 use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
 use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
-
+use App\Events\PostCreated;
+use Illuminate\Support\Facades\Log;
 class PostController extends Controller
 {
     /**
@@ -139,6 +140,7 @@ class PostController extends Controller
             'status'=>'published',
         ]);
 
+        event(new PostCreated($post));
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
         // (MỚI: Thêm 'category')
         $post->load(['user', 'category']);

@@ -37,7 +37,7 @@ class Post extends Model
      */
     public function comments()
     {
-        return $this->hasMany(Comment::class)->whereNull('parent_id');
+        return $this->hasMany(Comment::class)->whereNull('parent_id')->where('status', 'published');
     }
 
     /**
@@ -46,7 +46,7 @@ class Post extends Model
      */
     public function allComments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->where('status', 'published');
     }
 
     /**

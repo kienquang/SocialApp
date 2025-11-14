@@ -34,7 +34,14 @@ class ChatController extends Controller
                 'name' => $otherUser->name,
                 'avatar' => $otherUser->avatar
             ],
-            'last_message_id' => $conv->last_message_id ? $conv->last_message_id : null,
+            'last_message' => $conv->lastMessage ? [
+                'id' => $conv->lastMessage ? $conv->lastMessage->id : null,
+                'sender_id' => $conv->lastMessage ? $conv->lastMessage->sender_id : null,
+                'receiver_id' => $conv->lastMessage ? $conv->lastMessage->receiver_id : null,
+                'content' => $conv->lastMessage ? $conv->lastMessage->content : null,
+                'image_url' => $conv->lastMessage ? $conv->lastMessage->image_url : null,
+                'created_at' => $conv->lastMessage ? $conv->lastMessage->created_at : null,
+            ] : null,
         ];
     });
 
@@ -69,7 +76,7 @@ class ChatController extends Controller
                 $query->where('user_one_id', $receiverId)
                       ->where('user_two_id', $userId);
             })
-            ->update(['last_read_message_id' => $messages->last()->id]);
+            ->update(['last_read_message_id' => $messages->last()->id ?? null]);
 
         return response()->json($messages);
     }
@@ -78,7 +85,7 @@ class ChatController extends Controller
      * Gửi tin nhắn (văn bản hoặc ảnh)
      */
     public function sendMessage(Request $request)
-    {  
+    {
     try {
         $request->validate([
             'receiver_id' => 'required|integer|exists:users,id',
@@ -94,7 +101,7 @@ class ChatController extends Controller
             'image_url' => $request->input('image_url'),
             'created_at' => now(),
         ]);
-        
+
         $this->updateOrCreateConversation(
             $request->receiver_id,
             $message->id
@@ -136,7 +143,7 @@ class ChatController extends Controller
     );
 
     // Nếu có lastMessageId thì cập nhật
-    if ($lastMessageId !== null && 
+    if ($lastMessageId !== null &&
         Schema::hasColumn('conversations', 'last_message_id')) {
         $conversation->update([
             'last_message_id' => $lastMessageId,

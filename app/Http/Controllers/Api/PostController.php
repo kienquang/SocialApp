@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate; // Dùng cho Policy
 use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
 use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
-use App\Events\PostCreated;
+use App\Events\PostCreatedNotification;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\StoreUserPostNotification;
+use App\Models\Notification;
 class PostController extends Controller
 {
     /**
@@ -140,7 +142,27 @@ class PostController extends Controller
             'status'=>'published',
         ]);
 
-        event(new PostCreated($post));
+        $post_notification = [
+            'post_id' => $post->id,
+            'title' => $post->title,
+            'author_id' => $user->id,
+            'created_at' => now(),
+        ];
+
+        event(new PostCreatedNotification((object)$post_notification));
+
+        Notification::create([
+            'sender_id' => $user->id,
+            'type' => 'post',
+            'post_id' => $post->id,
+            'comment_id' => null,
+            'created_at' => now(),
+        ]);
+
+        $followerIds = $user->followers()->pluck('users.id')->toArray();
+
+        dispatch(new StoreUserPostNotification($post, $followerIds));
+
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
         // (MỚI: Thêm 'category')
         $post->load(['user', 'category']);

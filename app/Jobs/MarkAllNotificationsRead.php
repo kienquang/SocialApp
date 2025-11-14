@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
+use App\Models\UserNotification;
 
 class MarkAllNotificationsRead implements ShouldQueue
 {
@@ -33,8 +33,7 @@ class MarkAllNotificationsRead implements ShouldQueue
     public function handle()
     {
         //update tất cả thông báo của user là đã đọc
-        DB::table('user_notifications')
-            ->where('user_id', $this->userId)
+        UserNotification::where('user_id', $this->userId)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
     }

@@ -16,10 +16,14 @@ return new class extends Migration
         Schema::create('user_notifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            
+
             $table->foreignId('notification_id')->constrained('notifications')->onDelete('cascade');
 
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+
+            $table->foreignId('post_id')->constrained('posts')->onDelete('cascade')->nullable();
+
+            $table->foreignId('comment_id')->constrained('comments')->onDelete('cascade')->nullable();
 
             $table->timestamp('read_at')->nullable(); // NULL = chưa đọc
 

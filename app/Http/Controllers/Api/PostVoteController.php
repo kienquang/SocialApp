@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\VoteNotification;
+use Illuminate\Support\Facades\Log;
 
 class PostVoteController extends Controller
 {
@@ -49,6 +51,20 @@ class PostVoteController extends Controller
             $user->votedPosts()->attach($post->id, ['vote' => $voteValue]);
             $message = 'Đã vote thành công';
             $newVote = $voteValue;
+            if($user->id != $post->user_id) //không gửi notification cho chính mình
+            {
+                $voteArr = [
+                    //'id' => $user->votedPosts()->where('post_id', $post->id)->first()->pivot->id,
+                    'post_id' => $post->id,
+                    'author_id' => $post->user_id,
+                    'user_id' => $user->id,
+                    'vote' => $voteValue,
+                    'created_at' => $user->votedPosts()->where('post_id', $post->id)->first()->pivot->created_at,
+                ];
+                Log::info('Vote Array:', $voteArr);
+                $vote = (object)$voteArr;
+                event(new VoteNotification($vote));
+            }
         }
 
         // Tải lại điểm số (tính toán lại)

@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             MessagesSeeder::class,
             NotificationsSeeder::class,
             CommentsSeeder::class,
-            MessageReadsSeeder::class,
+            ConversationsSeeder::class,
             MentionsSeeder::class,
             PostVotesSeeder::class,
             AdvertisementsSeeder::class,

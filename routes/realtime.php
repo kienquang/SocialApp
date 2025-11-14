@@ -25,7 +25,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications', [NotificationController::class, 'index']);
 
-    Route::post('/notifications/send/post', [NotificationController::class, 'sendPostNotification']);
-
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead']);
 });

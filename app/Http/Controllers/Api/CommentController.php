@@ -9,6 +9,11 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Events\CommentNotification;
+use App\Events\replyCommentNotification;
+use App\Models\Notification;
+use App\Models\UserNotification;
+use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
@@ -48,21 +53,52 @@ class CommentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'content' => 'required|string',
-            // Bài viết phải tồn tại
-            'post_id' => ['required', Rule::exists('posts', 'id')],
-            // Nếu parent_id được cung cấp, nó cũng phải tồn tại
-            'parent_id' => ['nullable', Rule::exists('comments', 'id')],
+            'content'   => 'required|string',
+            'post_id'   => 'required|integer',
+            'parent_id' => 'nullable|integer',
         ]);
+        $post = Post::findOrFail($validated['post_id']);
+        $parentComment = null;
+        if ($validated['parent_id']) {
+            // findOrFail đảm bảo bình luận cha tồn tại
+            $parentComment = Comment::findOrFail($validated['parent_id']);
+        }
 
         /** @var \App\Models\User $user */ // <-- Thêm dòng này
         $user = Auth::user(); // <-- Gán user vào biến
 
         // Gọi 'posts()' từ biến $user
-        $comment = $user->comments()->create($validated);
+        $comment = $user->comments()->create($validated); //3
 
         // Tải 'user' ngay lập tức để trả về JSON cho đẹp
-        $comment->load('user');
+        //$comment->load('user'); thừa 1 truy vấn
+        $comment->setRelation('user', $user); // Sử dụng setRelation để tránh truy vấn thừa
+
+        // Phát sự kiện thông báo bình luận mới
+        if ($comment->user_id !== $post->user_id) {
+            $cmt = [
+                'id' => $comment->id,
+                'post_id' => $comment->post_id,
+                'parent_id' => $comment->parent_id,
+                'user_id' => $comment->user_id,
+                'user_name' => $comment->user->name,
+                'author_id' => $post->user_id,
+                'created_at' => $comment->created_at,
+            ];
+            event(new CommentNotification((object)$cmt));
+
+            if ($comment->parent_id) {
+                // Đây là phản hồi cho một bình luận khác
+                // Gửi sự kiện replyCommentNotification
+                if($parentComment->user_id != $comment->user_id) {
+                    // Nếu người trả lời là chính chủ bình luận cha, không gửi thông báo
+                $cmt['reply_to_user_id'] = $parentComment->user_id;
+                event(new replyCommentNotification((object)$cmt));
+                }
+
+            }
+        }
+
 
         return (new CommentResource($comment))
                 ->response()

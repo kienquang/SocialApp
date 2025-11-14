@@ -12,12 +12,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PostCreated implements ShouldBroadcast
+class PostCreatedNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $post;
-    public function __construct(Post $post)
+    public function __construct($post)
     {
         $this->post = $post;
     }
@@ -34,9 +34,10 @@ class PostCreated implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'id' => $this->post->id,
+            'post_id' => $this->post->post_id,
             'title' => $this->post->title,
-            'author_id' => $this->post->user_id,
+            'author_id' => $this->post->author_id,
+            'type' => 'post',
             'created_at' => $this->post->created_at->toDateTimeString(),
         ];
     }

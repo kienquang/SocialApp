@@ -10,25 +10,19 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcast
+class FollowedNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $RecieverId;
-    public $MessageText;
-    public $SenderName;
-    public $imageUrl;
+    public $follow;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($RecieverId, $MessageText, $SenderName, $imageUrl = null)
+    public function __construct($follow)
     {
-        $this->RecieverId = $RecieverId;
-        $this->MessageText = $MessageText;
-        $this->SenderName = $SenderName;
-        $this->imageUrl = $imageUrl;
+        $this->follow = $follow;
     }
 
     /**
@@ -38,10 +32,15 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("channel.{$this->RecieverId}");
+        return new PrivateChannel('notifications.' . $this->follow->followed_id);
     }
-    public function broadcastAs()
+    public function broadcastWith()
     {
-        return 'MessageSent';
+        return [
+            'follower_id' => $this->follow->follower_id,
+            'followed_id' => $this->follow->followed_id,
+            'type' => 'follow',
+            'created_at' => $this->follow->created_at->toDateTimeString(),
+        ];
     }
 }

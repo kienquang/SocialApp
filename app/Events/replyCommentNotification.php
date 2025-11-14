@@ -10,25 +10,19 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcast
+class replyCommentNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $RecieverId;
-    public $MessageText;
-    public $SenderName;
-    public $imageUrl;
+    public $replyComment;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($RecieverId, $MessageText, $SenderName, $imageUrl = null)
+    public function __construct($replyComment)
     {
-        $this->RecieverId = $RecieverId;
-        $this->MessageText = $MessageText;
-        $this->SenderName = $SenderName;
-        $this->imageUrl = $imageUrl;
+        $this->replyComment = $replyComment;
     }
 
     /**
@@ -38,10 +32,17 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("channel.{$this->RecieverId}");
+        return new PrivateChannel("notifications.{$this->replyComment->reply_to_user_id}"); //
     }
-    public function broadcastAs()
+    public function broadcastWith()
     {
-        return 'MessageSent';
+        return [
+            'reply_to_user_id' => $this->replyComment->reply_to_user_id,
+            'post_id' => $this->replyComment->post_id,
+            'user_id' => $this->replyComment->user_id,
+            'author_id' => $this->replyComment->author_id,
+            'type' => 'reply_comment',
+            'created_at' => $this->replyComment->created_at->toDateTimeString(),
+        ];
     }
 }

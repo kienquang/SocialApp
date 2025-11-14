@@ -9,26 +9,21 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\PostVote;
 
-class MessageSent implements ShouldBroadcast
+class VoteNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $RecieverId;
-    public $MessageText;
-    public $SenderName;
-    public $imageUrl;
+    public $vote;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($RecieverId, $MessageText, $SenderName, $imageUrl = null)
+    public function __construct($vote)
     {
-        $this->RecieverId = $RecieverId;
-        $this->MessageText = $MessageText;
-        $this->SenderName = $SenderName;
-        $this->imageUrl = $imageUrl;
+        $this->vote = $vote;
     }
 
     /**
@@ -38,10 +33,17 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("channel.{$this->RecieverId}");
+        return new PrivateChannel("notifications.{$this->vote->author_id}"); // broadcast chung 1 lần
     }
-    public function broadcastAs()
+    public function broadcastWith()
     {
-        return 'MessageSent';
+        return [
+            'author_id' => $this->vote->author_id,
+            'post_id' => $this->vote->post_id,
+            'user_id' => $this->vote->user_id,
+            'vote_value' => $this->vote->vote,
+            'type' => 'vote',
+            'created_at' => $this->vote->created_at->toDateTimeString(),
+        ];
     }
 }

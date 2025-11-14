@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\FollowedNotification;
 
 class FollowController extends Controller
 {
@@ -46,6 +47,13 @@ class FollowController extends Controller
             $following->attach($user->id);
             $message = 'Đã theo dõi thành công.';
             $newIsFollowing = true;
+
+            $follow = [
+                'follower_id' => $currentUser->id,
+                'followed_id' => $user->id,
+                'created_at' => now(),
+            ];
+            event(new FollowedNotification((object)$follow));
         }
 
         // 4. Lấy tổng số người theo dõi MỚI của user kia

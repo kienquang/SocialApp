@@ -13,33 +13,7 @@ use App\Jobs\MarkAllNotificationsRead;
 
 class NotificationController extends Controller
 {
-    public function sendPostNotification(Request $request)
-    {
-        $request->validate([
-            'type' => 'required|string',
-            'data' => 'required|string',
-            'recipients' => 'required|array',
-            'recipients.*' => 'integer|exists:users,id'
-        ]);
-
-        // Tạo thông báo gốc
-        $notification = Notification::create([
-            'sender_id' => auth()->id(),
-            'type' => $request->type,
-            'data' => $request->data,
-        ]);
-
-        $recipientIds = $request->input('recipients'); // mảng user_id
-
-        DistributeNotification::dispatch($notification->id, $recipientIds);
-
-        // broadcast đến client qua Pusher
-        broadcast(new PostCreated($notification));
-
-        return response()->json(['status' => 'queued']);
-    }
-
-     public function index(Request $request)
+    public function index(Request $request)
     {
         $userId = auth()->id();
         //$userId = 1;
@@ -57,10 +31,10 @@ class NotificationController extends Controller
     //đánh dâu tất cả đã đọc
     public function markAllRead()
     {
-        //xếp job vào queue 
+        //xếp job vào queue
         MarkAllNotificationsRead::dispatch(auth()->id());
 
         return response()->json(['status' => 'queued']);
     }
-    
+
 }

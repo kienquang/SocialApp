@@ -18,6 +18,7 @@ class MessageSent implements ShouldBroadcast
     public $MessageText;
     public $SenderName;
     public $imageUrl;
+    public $SenderId;
     /**
      * Create a new event instance.
      *
@@ -25,9 +26,10 @@ class MessageSent implements ShouldBroadcast
      */
     public function __construct($RecieverId, $MessageText, $SenderName, $imageUrl = null)
     {
+        $this->SenderId = auth()->id();
         $this->RecieverId = $RecieverId;
         $this->MessageText = $MessageText;
-        $this->SenderName = $SenderName;
+        $this->SenderName = auth()->user()->name;
         $this->imageUrl = $imageUrl;
     }
 
@@ -43,5 +45,15 @@ class MessageSent implements ShouldBroadcast
     public function broadcastAs()
     {
         return 'MessageSent';
+    }
+    public function broadcastWith()
+    {
+        return [
+            'SenderId' => $this->SenderId,
+            'SenderName' => $this->SenderName,
+            'RecieverId' => $this->RecieverId,
+            'MessageText' => $this->MessageText,
+            'imageUrl' => $this->imageUrl,
+        ];
     }
 }

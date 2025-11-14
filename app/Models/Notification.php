@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-     protected $fillable = ['sender_id', 'type', 'data'];
+     protected $fillable = ['sender_id', 'type', 'data','post_id','comment_id'];
 
     public $timestamps = false;
 

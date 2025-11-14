@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Message;
 use App\Events\MessageSent;
+use App\Events\ConversationChange;
 use App\Models\Conversation;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
@@ -102,17 +103,25 @@ class ChatController extends Controller
             'created_at' => now(),
         ]);
 
-        $this->updateOrCreateConversation(
+        $conversation=$this->updateOrCreateConversation(
             $request->receiver_id,
             $message->id
         );
 
         broadcast(new MessageSent(
-            1,
             $request->receiver_id,
             $request->input('content'),
             $request->input('image_url')
         ));
+
+        broadcast(new ConversationChange(
+            $conversation->id,
+            auth()->id(),
+            $request->receiver_id,
+            $message->id,
+            $message->content
+        ));
+
 
         return response()->json($message);
      } catch (\Throwable $e) {

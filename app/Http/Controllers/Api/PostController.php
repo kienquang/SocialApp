@@ -151,17 +151,24 @@ class PostController extends Controller
 
         event(new PostCreatedNotification((object)$post_notification));
 
-        Notification::create([
+        $notification=Notification::create([
             'sender_id' => $user->id,
             'type' => 'post',
             'post_id' => $post->id,
             'comment_id' => null,
             'created_at' => now(),
         ]);
+        $notificationData = [
+            'id' => $notification->id,
+            'sender_id' => $user->id,
+            'post_id' => $post->id,
+            'created_at' => now(),
+        ];
 
         $followerIds = $user->followers()->pluck('users.id')->toArray();
 
-        dispatch(new StoreUserPostNotification($post, $followerIds));
+        //dd($notificationData);
+        dispatch(new StoreUserPostNotification($notificationData, $followerIds))->onQueue('notification');
 
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
         // (MỚI: Thêm 'category')

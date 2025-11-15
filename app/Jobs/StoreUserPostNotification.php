@@ -14,16 +14,20 @@ class StoreUserPostNotification implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $notificationData;
+    public $notificationId;
+    public $senderId;
+    public $postId;
     public $followerIds;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($notificationData, $followerIds)
+    public function __construct($notificationId, $senderId, $postId, $followerIds)
     {
-        $this->notificationData = $notificationData;
+        $this->notificationId = $notificationId;
+        $this->senderId = $senderId;
+        $this->postId = $postId;
         $this->followerIds = $followerIds;
     }
 
@@ -34,13 +38,17 @@ class StoreUserPostNotification implements ShouldQueue
      */
     public function handle()
     {
+        if(empty($this->followerIds)) {
+            return;
+        }
+
         foreach ($this->followerIds as $followerId) {
             UserNotification::create([
                 'user_id' => $followerId,
-                'notification_id' => $this->notificationData['id'],
-                'sender_id' => $this->notificationData['sender_id'],
+                'notification_id' => $this->notificationId,
+                'sender_id' => $this->senderId,
                 'read_at' => null,
-                'post_id' => $this->notificationData['post_id'],
+                'post_id' => $this->postId,
                 'comment_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),

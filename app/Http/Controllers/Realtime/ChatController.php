@@ -95,8 +95,10 @@ class ChatController extends Controller
         ]);
         //dd(Message::class);
 
+        $user = User::findOrFail(auth()->id());
+
         $message = Message::create([
-            'sender_id' => auth()->id(),
+            'sender_id' => $user->id,
             'receiver_id' => $request->receiver_id,
             'content' => $request->input('content'),
             'image_url' => $request->input('image_url'),
@@ -107,16 +109,19 @@ class ChatController extends Controller
             $request->receiver_id,
             $message->id
         );
-
+        //dd($message->created_at->toDateTimeString());
         broadcast(new MessageSent(
-            $request->receiver_id,
-            $request->input('content'),
-            $request->input('image_url')
+            $user->id,
+            $user->name,
+            $message->receiver_id,
+            $message->content,
+            $message->image_url,
+            $message->created_at
         ));
 
         broadcast(new ConversationChange(
             $conversation->id,
-            auth()->id(),
+            $user->id,
             $request->receiver_id,
             $message->id,
             $message->content

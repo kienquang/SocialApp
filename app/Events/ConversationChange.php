@@ -42,7 +42,7 @@ class ConversationChange implements ShouldBroadcast
     {
         return new PrivateChannel("converation.change.{$this->receiverId}");
     }
-    public function broadcastas()
+    public function broadcastAs()
     {
         return 'ConversationChange';
     }

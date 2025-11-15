@@ -13,25 +13,44 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('user_notifications', function (Blueprint $table) {
+       Schema::create('user_notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            $table->foreignId('notification_id')->constrained('notifications')->onDelete('cascade');
+            // Ai nhận thông báo
+            $table->foreignId('user_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
 
-            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+            // Notification chung (bảng notifications)
+            $table->foreignId('notification_id')
+                  ->constrained('notifications')
+                  ->onDelete('cascade');
 
-            $table->foreignId('post_id')->constrained('posts')->onDelete('cascade')->nullable();
+            // Ai tạo notification
+            $table->foreignId('sender_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
 
-            $table->foreignId('comment_id')->constrained('comments')->onDelete('cascade')->nullable();
+            // Nếu là thông báo về post
+            $table->foreignId('post_id')
+                  ->nullable()
+                  ->constrained('posts')
+                  ->onDelete('cascade');
 
-            $table->timestamp('read_at')->nullable(); // NULL = chưa đọc
+            // Nếu là thông báo về comment
+            $table->foreignId('comment_id')
+                  ->nullable()
+                  ->constrained('comments')
+                  ->onDelete('cascade');
+
+            // Khi nào user đọc
+            $table->timestamp('read_at')->nullable();
 
             $table->timestamps();
 
+            // Đảm bảo 1 notification chỉ tạo 1 lần cho mỗi user
             $table->unique(['user_id', 'notification_id']);
         });
-
     }
 
     /**

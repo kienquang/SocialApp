@@ -14,10 +14,11 @@ class Message extends Model
         'receiver_id',
         'content',
         'image_url',
+        'created_at'
     ];
 
     public $timestamps = false;
-    
+
     public function Sender()
     {
         return $this->belongsTo(User::class, 'sender_id');

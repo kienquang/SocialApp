@@ -12,6 +12,11 @@ class UserNotification extends Model
     protected $fillable = [
         'user_id',
         'notification_id',
+        'sender_id',
         'read_at',
+        'post_id',
+        'comment_id',
+        'created_at',
+        'updated_at',
     ];
 }

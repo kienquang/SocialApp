@@ -14,23 +14,25 @@ class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $SenderId;
+    public $SenderName;
     public $RecieverId;
     public $MessageText;
-    public $SenderName;
     public $imageUrl;
-    public $SenderId;
+    public $createAt;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($RecieverId, $MessageText, $SenderName, $imageUrl = null)
+    public function __construct($SenderId, $SenderName, $RecieverId, $MessageText, $imageUrl = null, $createAt)
     {
-        $this->SenderId = auth()->id();
+        $this->SenderId = $SenderId;
+        $this->SenderName = $SenderName;
         $this->RecieverId = $RecieverId;
         $this->MessageText = $MessageText;
-        $this->SenderName = auth()->user()->name;
         $this->imageUrl = $imageUrl;
+        $this->createAt = $createAt;
     }
 
     /**
@@ -54,6 +56,7 @@ class MessageSent implements ShouldBroadcast
             'RecieverId' => $this->RecieverId,
             'MessageText' => $this->MessageText,
             'imageUrl' => $this->imageUrl,
+            'createAt' => $this->createAt,
         ];
     }
 }

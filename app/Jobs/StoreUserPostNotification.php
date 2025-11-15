@@ -37,9 +37,11 @@ class StoreUserPostNotification implements ShouldQueue
         foreach ($this->followerIds as $followerId) {
             UserNotification::create([
                 'user_id' => $followerId,
-                'sender_id' => $this->notificationData['user_id'],
                 'notification_id' => $this->notificationData['id'],
+                'sender_id' => $this->notificationData['sender_id'],
                 'read_at' => null,
+                'post_id' => $this->notificationData['post_id'],
+                'comment_id' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -59,7 +59,7 @@ class CommentController extends Controller
         ]);
         $post = Post::findOrFail($validated['post_id']);
         $parentComment = null;
-        if ($validated['parent_id']) {
+        if (!empty($validated['parent_id'])) {
             // findOrFail đảm bảo bình luận cha tồn tại
             $parentComment = Comment::findOrFail($validated['parent_id']);
         }

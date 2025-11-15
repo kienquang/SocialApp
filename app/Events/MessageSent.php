@@ -38,7 +38,8 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("channel.{$this->RecieverId}");
+        // Sử dụng channel đã được đăng ký trong routes/channels.php
+        return new PrivateChannel("App.Models.User.{$this->RecieverId}");
     }
     public function broadcastAs()
     {

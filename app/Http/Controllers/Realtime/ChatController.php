@@ -107,13 +107,16 @@ class ChatController extends Controller
             $message->id
         );
 
-        broadcast(new MessageSent(
-            1,
-            $request->receiver_id,
-            $request->input('content'),
-            $request->input('image_url')
-        ));
-
+        // Broadcast event
+        $event = new MessageSent(
+            $request->receiver_id,         // RecieverId = id người nhận (3) ✅
+            $request->input('content'),    // MessageText                   ✅
+            auth()->user()->name,          // SenderName = tên user gửi     ✅
+            $request->input('image_url')   // imageUrl                      ✅
+        );
+        
+        broadcast($event);
+        
         return response()->json($message);
      } catch (\Throwable $e) {
         return response()->json([

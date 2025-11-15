@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
+// Broadcast::routes() đã được gọi trong BroadcastServiceProvider, không cần gọi lại ở đây
+
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });

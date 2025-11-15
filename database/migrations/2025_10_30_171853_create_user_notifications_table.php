@@ -43,6 +43,9 @@ return new class extends Migration
                   ->constrained('comments')
                   ->onDelete('cascade');
 
+            // Nếu là thông báo về reply comment
+            $table->string('type')->notNullable();
+
             // Khi nào user đọc
             $table->timestamp('read_at')->nullable();
 

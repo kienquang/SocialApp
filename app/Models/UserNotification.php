@@ -16,6 +16,7 @@ class UserNotification extends Model
         'read_at',
         'post_id',
         'comment_id',
+        'type',
         'created_at',
         'updated_at',
     ];

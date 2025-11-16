@@ -34,7 +34,12 @@ class MarkAllNotificationsRead implements ShouldQueue
     {
         //update tất cả thông báo của user là đã đọc
         UserNotification::where('user_id', $this->userId)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        ->whereNull('read_at')
+        ->chunkById(1000, function ($notifications) {
+            $ids = $notifications->pluck('id');
+            UserNotification::whereIn('id', $ids)
+                ->update(['read_at' => now()]);
+        });
+
     }
 }

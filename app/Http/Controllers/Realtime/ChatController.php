@@ -122,6 +122,8 @@ class ChatController extends Controller
         broadcast(new ConversationChange(
             $conversation->id,
             $user->id,
+            $user->name,
+            $user->avatar,
             $request->receiver_id,
             $message->id,
             $message->content

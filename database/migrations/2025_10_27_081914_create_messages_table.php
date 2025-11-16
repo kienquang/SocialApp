@@ -20,8 +20,6 @@ return new class extends Migration
             $table->text('content')->nullable();
             $table->text('image_url')->nullable();
             $table->timestamp('created_at')->useCurrent();
-
-            $table->check('content IS NOT NULL OR image_url IS NOT NULL');
         });
     }
 

@@ -7,6 +7,9 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\VoteNotification;
+use App\Models\User;
+use App\Models\Notification;
+use App\Jobs\StoreUserPostNotification;
 use Illuminate\Support\Facades\Log;
 
 class PostVoteController extends Controller
@@ -61,9 +64,24 @@ class PostVoteController extends Controller
                     'vote' => $voteValue,
                     'created_at' => $user->votedPosts()->where('post_id', $post->id)->first()->pivot->created_at,
                 ];
-                Log::info('Vote Array:', $voteArr);
-                $vote = (object)$voteArr;
-                event(new VoteNotification($vote));
+                // Tạo notification record
+                $notification = Notification::create([
+                    'sender_id' => $user->id,
+                    'type' => 'vote',
+                    'post_id' => $post->id,
+                    'created_at' => now(),
+                ]);
+
+                event(new VoteNotification((object)$voteArr));
+
+                dispatch(new StoreUserPostNotification(
+                    $notification->id,
+                    $user->id,
+                    $post->id,
+                    null,
+                    'vote',
+                    [$post->user_id],
+                ))->onQueue('notification');
             }
         }
 

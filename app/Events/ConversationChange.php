@@ -16,6 +16,8 @@ class ConversationChange implements ShouldBroadcast
 
     public $conversationId;
     public $senderId;
+    public $senderName;
+    public $senderAvatar;
     public $receiverId;
     public $lastMessageId;
     public $lastMessageContent;
@@ -24,10 +26,12 @@ class ConversationChange implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct($conversationId, $senderId, $receiverId, $lastMessageId, $lastMessageContent)
+    public function __construct($conversationId, $senderId, $senderName, $sendetAvatar, $receiverId, $lastMessageId, $lastMessageContent)
     {
         $this->conversationId = $conversationId;
         $this->senderId = $senderId;
+        $this->senderName = $senderName;
+        $this->senderAvatar = $sendetAvatar;
         $this->receiverId = $receiverId;
         $this->lastMessageId = $lastMessageId;
         $this->lastMessageContent = $lastMessageContent;
@@ -51,6 +55,8 @@ class ConversationChange implements ShouldBroadcast
         return [
             'conversationId' => $this->conversationId,
             'senderId' => $this->senderId,
+            'SenderName' => $this->senderName,
+            'SenderAvatar' => $this->senderAvatar,
             'receiverId' => $this->receiverId,
             'lastMessageId' => $this->lastMessageId,
             'lastMessageContent' => $this->lastMessageContent,

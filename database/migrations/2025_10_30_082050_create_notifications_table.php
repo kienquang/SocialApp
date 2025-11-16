@@ -15,13 +15,17 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+
             $table->string('type');
 
             $table->unsignedBigInteger('post_id')->nullable();
+
             $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
 
             $table->unsignedBigInteger('comment_id')->nullable();
+
             $table->foreign('comment_id')->references('id')->on('comments')->onDelete('cascade');
 
             $table->timestamp('created_at')->useCurrent();

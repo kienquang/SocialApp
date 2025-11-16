@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate; // Dùng cho Policy
 use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
 use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
+use App\Models\User;
 use App\Events\PostCreatedNotification;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\StoreUserPostNotification;
@@ -167,6 +168,8 @@ class PostController extends Controller
             $notification->id,
             $user->id,
             $post->id,
+            null,
+            'post',
             $followerIds
         ))->onQueue('notification');
 

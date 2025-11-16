@@ -17,17 +17,21 @@ class StoreUserPostNotification implements ShouldQueue
     public $notificationId;
     public $senderId;
     public $postId;
+    public  $commentId;
+    public $type;
     public $followerIds;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($notificationId, $senderId, $postId, $followerIds)
+    public function __construct($notificationId, $senderId, $postId, $commentId, $type, $followerIds)
     {
         $this->notificationId = $notificationId;
         $this->senderId = $senderId;
         $this->postId = $postId;
+        $this->commentId = $commentId;
+        $this->type = $type;
         $this->followerIds = $followerIds;
     }
 
@@ -49,7 +53,8 @@ class StoreUserPostNotification implements ShouldQueue
                 'sender_id' => $this->senderId,
                 'read_at' => null,
                 'post_id' => $this->postId,
-                'comment_id' => null,
+                'comment_id' => $this->commentId,
+                'type' => $this->type,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

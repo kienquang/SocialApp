@@ -13,6 +13,7 @@ use App\Events\CommentNotification;
 use App\Events\replyCommentNotification;
 use App\Models\Notification;
 use App\Models\UserNotification;
+use App\Jobs\StoreUserPostNotification;
 use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
@@ -76,6 +77,15 @@ class CommentController extends Controller
 
         // Phát sự kiện thông báo bình luận mới
         if ($comment->user_id !== $post->user_id) {
+            // Tạo notification record
+            $notification = Notification::create([
+                'sender_id' => $user->id,
+                'type' => 'comment',
+                'post_id' => $post->id,
+                'comment_id' => $comment->id,
+                'created_at' => now(),
+            ]);
+
             $cmt = [
                 'id' => $comment->id,
                 'post_id' => $comment->post_id,
@@ -87,6 +97,15 @@ class CommentController extends Controller
             ];
             event(new CommentNotification((object)$cmt));
 
+            dispatch(new StoreUserPostNotification(
+                $notification->id,
+                $user->id,
+                $post->id,
+                $comment->id,
+                'comment',
+                [$post->user_id],
+            ))->onQueue('notification');
+
             if ($comment->parent_id) {
                 // Đây là phản hồi cho một bình luận khác
                 // Gửi sự kiện replyCommentNotification
@@ -94,8 +113,16 @@ class CommentController extends Controller
                     // Nếu người trả lời là chính chủ bình luận cha, không gửi thông báo
                 $cmt['reply_to_user_id'] = $parentComment->user_id;
                 event(new replyCommentNotification((object)$cmt));
-                }
+                dispatch(new StoreUserPostNotification(
+                    $notification->id,
+                    $user->id,
+                    $post->id,
+                    $comment->id,
+                    'reply_comment',
+                    [$parentComment->user_id],
+                ))->onQueue('notification');
 
+                }
             }
         }
 

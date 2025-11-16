@@ -90,8 +90,8 @@ class ChatController extends Controller
     try {
         $request->validate([
             'receiver_id' => 'required|integer|exists:users,id',
-            'content' => 'string',
-            'image_url' => 'nullable|string',
+            'content' => 'required_without:image_url|nullable|string',
+            'image_url' => 'required_without:content|nullable|string',
         ]);
         //dd(Message::class);
 

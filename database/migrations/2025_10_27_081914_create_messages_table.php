@@ -18,8 +18,10 @@ return new class extends Migration
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
             $table->text('content')->nullable();
-            $table->string('image_url')->nullable();
+            $table->text('image_url')->nullable();
             $table->timestamp('created_at')->useCurrent();
+
+            $table->check('content IS NOT NULL OR image_url IS NOT NULL');
         });
     }
 

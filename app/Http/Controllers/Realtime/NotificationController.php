@@ -31,7 +31,7 @@ class NotificationController extends Controller
     public function markAllRead()
     {
         //xếp job vào queue
-        MarkAllNotificationsRead::dispatch(auth()->id());
+        MarkAllNotificationsRead::dispatch(auth()->id())->onQueue('mark-read');
 
         return response()->json(['status' => 'queued']);
     }

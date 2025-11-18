@@ -78,10 +78,13 @@ class CommentController extends Controller
                 'id' => $comment->id,
                 'post_id' => $comment->post_id,
                 'parent_id' => $comment->parent_id,
-                'user_id' => $comment->user_id,
-                'user_name' => $comment->user->name,
                 'author_id' => $post->user_id,
                 'created_at' => $comment->created_at,
+                'sender' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'avatar' => $user->avatar,
+                ]
             ];
             event(new CommentNotification((object)$cmt));
 

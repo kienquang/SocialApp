@@ -16,7 +16,7 @@ class ConversationsSeeder extends Seeder
     public function run()
     {
          DB::table('conversations')->insert([
-            ['id' => 1, 'user_one_id' => 1, 'user_two_id' => 2, 'last_message_id' => 2, 'last_read_message_id' => null ,'created_at' => '2025-09-05 09:15:00',
+            ['id' => 1, 'user_one_id' => 1, 'user_two_id' => 2, 'last_message_id' => 2, 'last_read_message_id_one' => null, 'last_read_message_id_two' => null,'created_at' => '2025-09-05 09:15:00',
             'updated_at' => now(),]
         ]) ;
     }

@@ -41,6 +41,11 @@ class FollowedNotification implements ShouldBroadcast
             'followed_id' => $this->follow->followed_id,
             'type' => 'follow',
             'created_at' => $this->follow->created_at->toDateTimeString(),
+             'sender' => [
+                'id' => $this->follow->sender['id'],
+                'name' => $this->follow->sender['name'],
+                'avatar' => $this->follow->sender['avatar'],
+            ]
         ];
     }
 }

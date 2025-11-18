@@ -9,6 +9,8 @@ class Conversation extends Model
         'user_one_id',
         'user_two_id',
         'last_message_id',
+        'last_read_message_id_one',
+        'last_read_message_id_two'
     ];
 
     public function userOne()

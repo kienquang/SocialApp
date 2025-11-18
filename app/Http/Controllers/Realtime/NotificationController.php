@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Realtime;
 
 use App\Events\PostCreated;
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
+use App\Models\UserNotification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,15 +15,14 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $userId = auth()->id();
-        //$userId = 1;
+        // Lấy tất cả notifications của user đang login
+        $user = $request->user(); // hoặc Auth::user()
 
-        $notifications = DB::table('user_notifications as un')
-            ->join('notifications as n', 'un.notification_id', '=', 'n.id')
-            ->where('un.user_id', $userId)
-            ->select('n.id', 'n.sender_id', 'n.data', 'n.created_at', 'un.read_at')
-            ->orderByDesc('n.created_at')
-            ->paginate(20);
+        // Eager load sender để lấy name và avatar
+        $notifications = UserNotification::with('sender:id,name,avatar')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20); // phân trang nếu muốn
 
         return response()->json($notifications);
     }

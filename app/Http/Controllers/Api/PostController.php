@@ -15,6 +15,7 @@ use App\Events\PostCreatedNotification;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\StoreUserPostNotification;
 use App\Models\Notification;
+use App\Jobs\PostNotification;
 class PostController extends Controller
 {
     /**
@@ -146,11 +147,15 @@ class PostController extends Controller
         $post_notification = [
             'post_id' => $post->id,
             'title' => $post->title,
-            'author_id' => $user->id,
             'created_at' => now(),
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
         ];
 
-        event(new PostCreatedNotification((object)$post_notification));
+        dispatch(new PostNotification((object)$post_notification,$user->followers()->pluck('users.id')->toArray()))->onQueue('notification');
 
         $notification=Notification::create([
             'sender_id' => $user->id,

@@ -43,6 +43,7 @@ class ChatController extends Controller
                 'image_url' => $conv->lastMessage ? $conv->lastMessage->image_url : null,
                 'created_at' => $conv->lastMessage ? $conv->lastMessage->created_at : null,
             ] : null,
+            'last_read_message_id' => $conv->user_one_id == $userId ? $conv->last_read_message_id_one : $conv->last_read_message_id_two,
         ];
     });
 
@@ -68,16 +69,24 @@ class ChatController extends Controller
                         ->orderBy('created_at', 'asc')
                         ->get();
 
-        DB::table('conversations')
-            ->where(function ($query) use ($userId, $receiverId) {
-                $query->where('user_one_id', $userId)
-                      ->where('user_two_id', $receiverId);
-            })
-            ->orWhere(function ($query) use ($userId, $receiverId) {
-                $query->where('user_one_id', $receiverId)
-                      ->where('user_two_id', $userId);
-            })
-            ->update(['last_read_message_id' => $messages->last()->id ?? null]);
+        // Cập nhật trạng thái đã đọc trong cuộc trò chuyện
+        if ($userId < $receiverId) {
+            $conversation = Conversation::where('user_one_id', $userId)
+                                        ->where('user_two_id', $receiverId)
+                                        ->first();
+            if ($conversation) {
+                $conversation->last_read_message_id_one = $messages->last()->id ?? null;
+                $conversation->save();
+            }
+        } else {
+            $conversation = Conversation::where('user_one_id', $receiverId)
+                                        ->where('user_two_id', $userId)
+                                        ->first();
+            if ($conversation) {
+                $conversation->last_read_message_id_two = $messages->last()->id ?? null;
+                $conversation->save();
+            }
+        }
 
         return response()->json($messages);
     }
@@ -95,10 +104,10 @@ class ChatController extends Controller
         ]);
         //dd(Message::class);
 
-        $user = User::findOrFail(auth()->id());
+        $receiver = User::findOrFail($request->receiver_id);
 
         $message = Message::create([
-            'sender_id' => $user->id,
+            'sender_id' => auth()->id(),
             'receiver_id' => $request->receiver_id,
             'content' => $request->input('content'),
             'image_url' => $request->input('image_url'),
@@ -109,26 +118,46 @@ class ChatController extends Controller
             $request->receiver_id,
             $message->id
         );
-        //dd($message->created_at->toDateTimeString());
+
         broadcast(new MessageSent(
-            $user->id,
-            $user->name,
+            auth()->id(),
+            auth()->user()->name,
             $message->receiver_id,
             $message->content,
             $message->image_url,
             $message->created_at
         ));
+        if(auth()->id() < $receiver->id) {
+            $senderLastReadId = $conversation->last_read_message_id_one;
+            $receiverLastReadId = $conversation->last_read_message_id_two;
+        } else {
+            $senderLastReadId = $conversation->last_read_message_id_two;
+            $receiverLastReadId = $conversation->last_read_message_id_one;
+        }
 
         broadcast(new ConversationChange(
             $conversation->id,
-            $user->id,
-            $user->name,
-            $user->avatar,
-            $request->receiver_id,
+            auth()->id(),
+            auth()->user()->name,
+            auth()->user()->avatar,
+            $receiver->id,
+            $receiver->id,
             $message->id,
-            $message->content
+            $message->content,
+            $receiverLastReadId
         ));
 
+        broadcast(new ConversationChange(
+            $conversation->id,
+            auth()->id(),
+            auth()->user()->name,
+            auth()->user()->avatar,
+            $receiver->id,
+            auth()->id(),
+            $message->id,
+            $message->content,
+            $senderLastReadId
+        ));
 
         return response()->json($message);
      } catch (\Throwable $e) {
@@ -142,31 +171,31 @@ class ChatController extends Controller
 
     public function updateOrCreateConversation($receiverId, $lastMessageId = null)
     {
-    $senderId = auth()->id();
-    //$senderId = 1;
-    // Sắp xếp ID để tránh tạo trùng
-    [$userOne, $userTwo] = [$senderId, $receiverId];
-    if ($userOne > $userTwo) {
-        [$userOne, $userTwo] = [$userTwo, $userOne];
-    }
+        $senderId = auth()->id();
 
-    // Tìm conversation hiện có
-     $conversation = Conversation::firstOrCreate(
-        [
-            'user_one_id' => $userOne,
-            'user_two_id' => $userTwo,
-        ]
-    );
+        //sắp xếp ID, id nhỏ hơn luôn ở vị trí user_one_id
+        [$userOne, $userTwo] = $senderId < $receiverId ? [$senderId, $receiverId] : [$receiverId, $senderId];
 
-    // Nếu có lastMessageId thì cập nhật
-    if ($lastMessageId !== null &&
-        Schema::hasColumn('conversations', 'last_message_id')) {
-        $conversation->update([
-            'last_message_id' => $lastMessageId,
-            'updated_at' => now(),
-        ]);
-    }
+        $valuesToUpdate = [
+            'updated_at' => now(), // Luôn cập nhật thời gian hoạt động mới nhất
+        ];
 
-    return $conversation;
+        // Chỉ cập nhật last_message_id nếu có giá trị
+        if (!empty($lastMessageId)) {
+            $valuesToUpdate['last_message_id'] = $lastMessageId;
+            if ($userOne == $senderId) {
+                $valuesToUpdate['last_read_message_id_one'] = $lastMessageId;
+            } else {
+                $valuesToUpdate['last_read_message_id_two'] = $lastMessageId;
+            }
+        }
+
+        return Conversation::updateOrCreate(
+            [
+                'user_one_id' => $userOne,
+                'user_two_id' => $userTwo,
+            ],
+            $valuesToUpdate // Dữ liệu để cập nhật hoặc tạo mới
+        );
     }
 }

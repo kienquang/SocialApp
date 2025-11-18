@@ -39,12 +39,14 @@ class CommentNotification implements ShouldBroadcast
         return [
             'id' => $this->comment->id,
             'post_id' => $this->comment->post_id,
-            'user_id' => $this->comment->user_id,
             'parent_id' => $this->comment->parent_id,
-            'user_name' => $this->comment->user_name,
             'type' => 'comment',
-            //'author_id' => $this->comment->author_id,
             'created_at' => $this->comment->created_at->toDateTimeString(),
+            'sender' => [
+                'id' => $this->comment->sender['id'],
+                'name' => $this->comment->sender['name'],
+                'avatar' => $this->comment->sender['avatar'],
+            ]
         ];
     }
 }

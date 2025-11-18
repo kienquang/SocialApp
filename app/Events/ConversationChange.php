@@ -19,22 +19,26 @@ class ConversationChange implements ShouldBroadcast
     public $senderName;
     public $senderAvatar;
     public $receiverId;
+    public $toId;
     public $lastMessageId;
     public $lastMessageContent;
+    public $lastReadId;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($conversationId, $senderId, $senderName, $sendetAvatar, $receiverId, $lastMessageId, $lastMessageContent)
+    public function __construct($conversationId, $senderId, $senderName, $sendetAvatar, $receiverId, $toId, $lastMessageId, $lastMessageContent, $lastReadId)
     {
         $this->conversationId = $conversationId;
         $this->senderId = $senderId;
         $this->senderName = $senderName;
         $this->senderAvatar = $sendetAvatar;
         $this->receiverId = $receiverId;
+        $this->toId = $toId;
         $this->lastMessageId = $lastMessageId;
         $this->lastMessageContent = $lastMessageContent;
+        $this->lastReadId = $lastReadId;
     }
 
     /**
@@ -44,7 +48,7 @@ class ConversationChange implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("converation.change.{$this->receiverId}");
+        return new PrivateChannel("converation.change.{$this->toId}");
     }
     public function broadcastAs()
     {
@@ -60,6 +64,7 @@ class ConversationChange implements ShouldBroadcast
             'receiverId' => $this->receiverId,
             'lastMessageId' => $this->lastMessageId,
             'lastMessageContent' => $this->lastMessageContent,
+            'lastReadId' => $this->lastReadId,
         ];
     }
 }

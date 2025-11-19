@@ -48,7 +48,7 @@ class ConversationChange implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("converation.change.{$this->toId}");
+        return new PrivateChannel("conversation.change.{$this->toId}");
     }
     public function broadcastAs()
     {

@@ -53,11 +53,10 @@ class PostController extends Controller
         $query->where('status', 'published');
 
         // 1. Tải các quan hệ cần thiết
-        // (MỚI: Thêm 'category')
         $query->with(['user', 'category']);
 
         // 2. Tải các số đếm
-        // Dùng 'allComments' (đã sửa) để đếm TẤT CẢ bình luận
+        // Dùng 'allComments' để đếm TẤT CẢ bình luận
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
 

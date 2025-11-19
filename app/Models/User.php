@@ -92,7 +92,7 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
      */
     public function posts()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Post::class)->where('status', 'published');
     }
 
     /**
@@ -100,7 +100,7 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
      */
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->where('status', 'published');
     }
 
     /**
@@ -211,7 +211,7 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
 
     /**
      * Các bài viết mà người này đã vote.
-     * Thêm withPivot('vote') để lấy cả cột 'vote'.
+     * Thêm withPivot('vote') để lấy cả cột 'vote' TRONG BẢNG TRUNG GIAN post_votes.
      */
     public function votedPosts()
     {

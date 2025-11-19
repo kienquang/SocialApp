@@ -33,7 +33,7 @@ class ImageUploadController extends Controller
                 // (MỚI) Áp dụng (Apply) biến đổi (transformations) ngay lúc upload (tải lên)
                 'transformation' => [
                     [
-                        'quality' => 'auto:eco', // Tự động nén (compress) (Eco)
+                        'quality' => 'auto:low', // Tự động nén (compress) (low)
                         'fetch_format' => 'auto' // Tự động chọn (choose) định dạng (format) (webp, avif...)
                     ]
                 ]

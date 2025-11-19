@@ -144,7 +144,7 @@ class UserProfileController extends Controller
         $uploadedFile = $validated['cover']->storeOnCloudinary('user_covers', [
              // (THÊM LẠI) Logic (Logic) Tối ưu (Optimize)
             'transformation' => [
-                'quality' => 'auto:eco',
+                'quality' => 'auto:low',
                 'fetch_format' => 'auto'
             ]
         ]);

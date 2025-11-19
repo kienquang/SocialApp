@@ -28,8 +28,8 @@ class UserSearchResource extends JsonResource
         if (!$url) {
             return null;
         }
-        // (SỬA) Đổi (Change) thành 'eco' (Tiết kiệm)
-        $transformations = 'q_auto:eco,f_auto';
+        // (SỬA) Đổi (Change) thành 'low' (Tiết kiệm)
+        $transformations = 'q_auto:low,f_auto';
         return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }
 }

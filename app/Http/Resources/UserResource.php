@@ -33,8 +33,9 @@ class UserResource extends JsonResource
             return null;
         }
 
-        // (SỬA) Đổi (Change) thành 'eco' (Tiết kiệm) để nén (compress) mạnh hơn
-        $transformations = 'q_auto:eco,f_auto';
+        // (SỬA) 'q_auto:low' là mức chất lượng thấp nhất của thuật toán tự động
+        // Kết hợp 'f_auto' để chuyển sang định dạng nhẹ nhất (WebP/AVIF)
+        $transformations = 'q_auto:low,f_auto';
 
         return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }

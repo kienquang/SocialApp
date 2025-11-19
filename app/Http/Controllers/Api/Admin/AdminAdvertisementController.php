@@ -36,7 +36,7 @@ class AdminAdvertisementController extends Controller
             $uploadedFile = Cloudinary::upload($request->file('image_file')->getRealPath(), [
                 'folder' => 'advertisements',
                 'transformation' => [
-                    'quality' => 'auto:eco',
+                    'quality' => 'auto:low',
                     'fetch_format' => 'auto'
                 ]
             ]);
@@ -83,7 +83,7 @@ class AdminAdvertisementController extends Controller
                  $uploadedFile = Cloudinary::upload($request->file('image_file')->getRealPath(), [
                     'folder' => 'advertisements',
                     'transformation' => [
-                        'quality' => 'auto:eco',
+                        'quality' => 'auto:low',
                         'fetch_format' => 'auto'
                     ]
                 ]);

@@ -64,7 +64,6 @@ class CommentController extends Controller
         $comment->setRelation('user', $user); // Sử dụng setRelation để tránh truy vấn thừa
 
         // Phát sự kiện thông báo bình luận mới
-        if ($comment->user_id !== $post->user_id) {
             // Tạo notification record
             $notification = Notification::create([
                 'sender_id' => $user->id,
@@ -86,6 +85,8 @@ class CommentController extends Controller
                     'avatar' => $user->avatar,
                 ]
             ];
+            if($post->user_id != $user->id) {
+                // Nếu người bình luận là author, không gửi thông báo comnment về author
             event(new CommentNotification((object)$cmt));
 
             dispatch(new StoreUserPostNotification(
@@ -96,6 +97,7 @@ class CommentController extends Controller
                 'comment',
                 [$post->user_id],
             ))->onQueue('notification');
+            }
 
             if ($comment->parent_id) {
                 // Đây là phản hồi cho một bình luận khác
@@ -115,7 +117,6 @@ class CommentController extends Controller
 
                 }
             }
-        }
 
 
         return (new CommentResource($comment))

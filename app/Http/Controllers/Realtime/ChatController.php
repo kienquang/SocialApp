@@ -98,7 +98,7 @@ class ChatController extends Controller
     {
     try {
         $request->validate([
-            'receiver_id' => 'required|integer|exists:users,id',
+            'receiver_id' => 'required|integer|exists:users,id|not_in:' . auth()->id(),
             'content' => 'required_without:image_url|nullable|string',
             'image_url' => 'required_without:content|nullable|string',
         ]);

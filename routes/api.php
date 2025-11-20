@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\ImageUploadController;
+use App\Http\Controllers\Api\Moderator\AdminAuthController;
 use App\Http\Controllers\Api\Moderator\ModerationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostVoteController;
@@ -34,6 +35,9 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 require __DIR__.'/auth.php';
+
+// API Đăng nhập riêng cho Admin (Frontend sẽ gọi cái này ở trang /admin/login)
+Route::post('/admin/login', [AdminAuthController::class, 'store']);
 
 // --- Route Public (Ai cũng xem được) ---
 Route::get('/posts', [PostController::class, 'index']);

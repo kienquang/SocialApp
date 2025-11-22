@@ -17,7 +17,6 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'role' => $this->role,
             'avatar' => $this->optimizeUrl($this->avatar, 'avatar'),
             'cover_photo_url' => $this->cover_photo_url,
             'created_at' => $this->created_at,

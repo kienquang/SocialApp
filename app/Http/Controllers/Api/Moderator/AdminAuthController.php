@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Moderator;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -31,9 +32,15 @@ class AdminAuthController extends Controller
         // Nếu là Admin, trả về token như bình thường
         $token = $user->createToken('admin-token')->plainTextToken;
 
+        $userData = (new UserResource($user))->toArray($request);
+
+        // CHỈ THÊM role KHI ĐĂNG NHẬP QUA CỔNG ADMIN
+        // (ở đây chắc chắn user là admin/superadmin/mod rồi)
+        $userData['role'] = $user->role;
+
         return response()->json([
-            'user' => new \App\Http\Resources\UserResource($user),
-            'token' => $token
+            'user'  => $userData,
+            'token' => $token,
         ]);
     }
 }

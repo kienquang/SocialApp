@@ -58,11 +58,10 @@ class PostController extends Controller
         $query->where('status', 'published');
 
         // 1. Tải các quan hệ cần thiết
-        // (MỚI: Thêm 'category')
         $query->with(['user', 'category']);
 
         // 2. Tải các số đếm
-        // Dùng 'allComments' (đã sửa) để đếm TẤT CẢ bình luận
+        // Dùng 'allComments' để đếm TẤT CẢ bình luận
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
 
@@ -210,14 +209,6 @@ class PostController extends Controller
         $post->loadCount('allComments as comments_count');
         $post->loadSum('votes as vote_score', 'vote');
 
-        // Tải bình luận GỐC (phân trang)
-        $post->load([
-            'comments' => function ($query) {
-                $query->with('user') // Tải tác giả của bình luận
-                      ->withCount('replies as replies_count') // Đếm số phản hồi
-                      ->orderBy('created_at', 'asc'); // Cũ nhất trước
-            }
-        ]);
 
         $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)

@@ -17,8 +17,8 @@ class ProfileResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'avatar' => $this->avatar,
-            'cover_photo_url' => $this->cover_photo_url,
+            'avatar' => $this->optimizeUrl($this->avatar),
+            'cover_photo_url' => $this->optimizeUrl($this->cover_photo_url),
             'role' => $this->role,
             'created_at' => $this->created_at,
 
@@ -30,5 +30,18 @@ class ProfileResource extends JsonResource
             // (MỚI) Thêm (Add) 'is_following' (trạng thái theo dõi) (đã được tính toán ở Controller (Bộ điều khiển))
             'is_following' => $this->is_following ?? false,
         ];
+    }
+
+    /**
+     * (MỚI) Hàm (Function) Helper (Hỗ trợ) Tối ưu (Optimize) URL (Đường dẫn) Cloudinary
+     */
+    private function optimizeUrl($url)
+    {
+        if (!$url) {
+            return null;
+        }
+        // (SỬA) Đổi (Change) thành 'low' (thấp nhất)
+        $transformations = 'q_auto:low,f_auto';
+        return str_replace('/upload/', '/upload/' . $transformations . '/', $url);
     }
 }

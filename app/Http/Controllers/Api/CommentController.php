@@ -18,6 +18,18 @@ use Illuminate\Support\Facades\DB;
 
 class CommentController extends Controller
 {
+    public function getForPost(Request $request, Post $post){
+        $request-> validate([
+            'limit' => 'sometimes|integer|min:1|max:50',
+        ]);
+        $limit = $request->query('limit', 10);
+        $comments = $post->comments()
+                        ->with('user')
+                        ->withCount('replies as replies_count') // Đếm (Count) số phản hồi (replies)
+                        ->orderBy('created_at', 'desc') // Mới nhất (Newest) lên trước (first)
+                        ->paginate($limit);
+        return CommentResource::collection($comments);
+    }
     /**
      * API để lấy các bình luận phản hồi của 1 bình luận cha.
      * (GET /api/comments/{comment}/replies)

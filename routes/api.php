@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
+use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\ImageUploadController;
+use App\Http\Controllers\Api\Moderator\AdminAuthController;
 use App\Http\Controllers\Api\Moderator\ModerationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostVoteController;
@@ -33,11 +36,16 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 require __DIR__.'/auth.php';
 
+// API Đăng nhập riêng cho Admin (Frontend sẽ gọi cái này ở trang /admin/login)
+Route::post('/admin/login', [AdminAuthController::class, 'store']);
+
 // --- Route Public (Ai cũng xem được) ---
 Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+//  Lấy (Get) Bình luận (Comment)cho một (a) Bài viết (Post)
+Route::get('/posts/{post}/comments', [CommentController::class, 'getForPost']);
 
-// API MỚI: Lấy các phản hồi của 1 bình luận
+// API Lấy các phản hồi của 1 bình luận
 Route::get('/comments/{comment}/replies', [CommentController::class, 'getReplies']);
 
 // Lấy danh sách chuyên mục
@@ -52,6 +60,9 @@ Route::get('/profiles/{user}/following', [ProfileController::class, 'getFollowin
 
 // Search (Tìm kiếm) User (Người dùng)
 Route::get('/users/search', [ProfileController::class, 'search'])->name('users.search');
+
+// API (API) (Giao diện lập trình ứng dụng) Lấy (Get) Quảng cáo (Ad) (Public (Công khai))
+Route::get('/advertisements', [AdvertisementController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -75,6 +86,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // ---  CẬP NHẬT AVATAR, COVER-PHOTO ---
     Route::post('/user/avatar', [UserProfileController::class, 'updateAvatar']);
     Route::post('/user/cover-photo', [UserProfileController::class, 'updateCoverPhoto']);
+
+    // Cập nhật (Update) chi tiết (details) (tên, v.v.)
+    Route::patch('/profile/details', [UserProfileController::class, 'updateProfile']);
+    //  đổi (change) mật khẩu (password)
+    Route::patch('/profile/password', [UserProfileController::class, 'updatePassword']);
 
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
@@ -127,6 +143,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::get('/users/{user}/moderation-history', [UserManagementController::class, 'getModerationHistory']);
         // Lấy (Get) danh sách (list) user (người dùng) bị ban (khóa)
         Route::get('/users/banned', [UserManagementController::class, 'getBannedList']);
+
+        // để xử lý (handle) file (tệp) upload (tải lên) trên (on) 'update' (cập nhật)
+        Route::get('/advertisements', [AdminAdvertisementController::class, 'index']);
+        Route::post('/advertisements', [AdminAdvertisementController::class, 'store']);
+        // (SỬA) Dùng (Use) POST (Gửi) cho update (cập nhật) để hỗ trợ (support) `form-data` (dữ liệu biểu mẫu) (file (tệp) upload (tải lên))
+        Route::post('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'update']);
+        Route::delete('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'destroy']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

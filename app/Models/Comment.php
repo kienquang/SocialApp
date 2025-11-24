@@ -39,5 +39,10 @@ class Comment extends Model
                         ->where('status', 'published');
     }
 
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
+
 
 }

@@ -23,8 +23,15 @@ class NotificationController extends Controller
             ->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(20); // phân trang nếu muốn
+        $unread = $notifications->whereNull('read_at')->take(99)->count();
 
-        return response()->json($notifications);
+        // Chuyển về array để thêm thuộc tính
+        $data = $notifications->toArray();
+
+        // Thêm thuộc tính unread_count
+        $data['unread_count'] = $unread;
+
+        return response()->json($data);
     }
 
     //đánh dâu tất cả đã đọc

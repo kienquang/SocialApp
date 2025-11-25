@@ -13,8 +13,11 @@ use App\Events\CommentNotification;
 use App\Events\replyCommentNotification;
 use App\Models\Notification;
 use App\Models\UserNotification;
+use App\Events\CommentSent;
 use App\Jobs\StoreUserPostNotification;
 use Illuminate\Support\Facades\DB;
+
+use function Symfony\Component\String\u;
 
 class CommentController extends Controller
 {
@@ -76,60 +79,63 @@ class CommentController extends Controller
         $comment->setRelation('user', $user); // Sử dụng setRelation để tránh truy vấn thừa
 
         // Phát sự kiện thông báo bình luận mới
-            // Tạo notification record
-            $notification = Notification::create([
-                'sender_id' => $user->id,
-                'type' => 'comment',
-                'post_id' => $post->id,
-                'comment_id' => $comment->id,
-                'created_at' => now(),
-            ]);
+        // Tạo notification record
+        $notification = Notification::create([
+            'sender_id' => $user->id,
+            'type' => 'comment',
+            'post_id' => $post->id,
+            'comment_id' => $comment->id,
+            'created_at' => now(),
+        ]);
 
-            $cmt = [
-                'id' => $comment->id,
-                'post_id' => $comment->post_id,
-                'parent_id' => $comment->parent_id,
-                'author_id' => $post->user_id,
-                'created_at' => $comment->created_at,
-                'sender' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar,
-                ]
-            ];
-            if($post->user_id != $user->id) {
-                // Nếu người bình luận là author, không gửi thông báo comnment về author
-            event(new CommentNotification((object)$cmt));
+        $cmt = [
+            'id' => $comment->id,
+            'post_id' => $comment->post_id,
+            'parent_id' => $comment->parent_id,
+            'author_id' => $post->user_id,
+            'created_at' => $comment->created_at,
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
+        ];
+        if($post->user_id != $user->id) {
+            // Nếu người bình luận là author, không gửi thông báo comnment về author
+        event(new CommentNotification((object)$cmt));
 
+        dispatch(new StoreUserPostNotification(
+            $notification->id,
+            $user->id,
+            $post->id,
+            $comment->id,
+            'comment',
+            [$post->user_id],
+        ))->onQueue('notification');
+        }
+
+        if ($comment->parent_id) {
+            // Đây là phản hồi cho một bình luận khác
+            // Gửi sự kiện replyCommentNotification
+            if($parentComment->user_id != $comment->user_id) {
+                // Nếu người trả lời là chính chủ bình luận cha, không gửi thông báo
+            $cmt['reply_to_user_id'] = $parentComment->user_id;
+            event(new replyCommentNotification((object)$cmt));
             dispatch(new StoreUserPostNotification(
                 $notification->id,
                 $user->id,
                 $post->id,
                 $comment->id,
-                'comment',
-                [$post->user_id],
+                'reply_comment',
+                [$parentComment->user_id],
             ))->onQueue('notification');
             }
+        }
 
-            if ($comment->parent_id) {
-                // Đây là phản hồi cho một bình luận khác
-                // Gửi sự kiện replyCommentNotification
-                if($parentComment->user_id != $comment->user_id) {
-                    // Nếu người trả lời là chính chủ bình luận cha, không gửi thông báo
-                $cmt['reply_to_user_id'] = $parentComment->user_id;
-                event(new replyCommentNotification((object)$cmt));
-                dispatch(new StoreUserPostNotification(
-                    $notification->id,
-                    $user->id,
-                    $post->id,
-                    $comment->id,
-                    'reply_comment',
-                    [$parentComment->user_id],
-                ))->onQueue('notification');
-
-                }
-            }
-
+        // Phát sự kiện CommentSent để broadcast qua kênh riêng tư
+        unset($cmt['reply_to_user_id']); // Loại bỏ quan hệ user để tránh dư thừa dữ liệu
+        $cmt['content'] = $comment->content;
+        event(new CommentSent((object)$cmt));
 
         return (new CommentResource($comment))
                 ->response()

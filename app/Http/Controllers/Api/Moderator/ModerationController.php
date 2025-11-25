@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api\Moderator;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CommentResource;
+use App\Http\Resources\PostResource;
 use App\Http\Resources\ReportCommentResource;
 use App\Http\Resources\ReportPostResource;
 use App\Http\Resources\ReportUserResource;
+use App\Models\Comment;
+use App\Models\Post;
 use App\Models\Report_comment;
 use App\Models\Report_post;
 use App\Models\Report_user;
@@ -89,5 +93,49 @@ class ModerationController extends Controller
         $reportUser->delete();
 
         return response()->json(['message' => 'Báo cáo đã được giải quyết.'], 200);
+    }
+    // Lấy các bài viết đã bị gỡ bỏ
+    public function getRemovedPosts(Request $request){
+        $posts = Post::where('status', 'removed_by_mod')
+                        ->with(['user', 'category'])
+                        ->withCount('allComments as comments_count')
+                        ->orderby('updated_at','desc')
+                        ->paginate(29);
+        return PostResource::collection($posts);
+    }
+    //Khôi phục các bài viết đã bị gỡ bỏ
+    public function restorePost(Post $post){
+        if($post-> status === 'published'){
+            return response()->json(['messange'=>'Bài viết này đang hiển thị bình thường.'],422);
+        }
+
+        $post->update(['status'=>'published']);
+        return response()->json([
+            'message'=>'Bài viết này đã được khôi phục',
+            'post' => new PostResource($post)
+        ]);
+    }
+
+    //Lấy các comment đã bị gỡ bỏ
+    public function getRemovedComments(Request $request){
+        $comments = Comment::where('status', 'removed_by_mod')
+                            ->with(['user', 'post'])
+                            ->orderby('updated_at', 'desc')
+                            ->paginate(20);
+        return CommentResource::collection($comments);
+    }
+
+    //Khôi phục các comment đã bị gỡ bỏ
+    public function restoreComment(Comment $comment){
+        if($comment->status ==='published'){
+            return response()->json(['message'=>'Bình luận này đang được hiển thị bình thường']);
+        }
+
+        $comment->update(['status'=>'published']);
+
+        return response()->json([
+            'message'=>'Bình luận đã được khôi phục thành công',
+            'comment'=> new CommentResource($comment),
+        ]);
     }
 }

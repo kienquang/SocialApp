@@ -70,6 +70,8 @@ Route::get('/advertisements', [AdvertisementController::class, 'index']);
 Route::get('/settings/logo', [SettingController::class, 'getLogo']);
 // Lấy background
 Route::get('/settings/background', [SettingController::class, 'getBackground']);
+// Lấy footer
+Route::get('/settings/footer', [SettingController::class, 'getFooter']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -171,6 +173,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::post('/settings/logo', [AdminSettingController::class, 'updateLogo']);
         // Cập nhật backgound
         Route::post('/settings/background', [AdminSettingController::class, 'updateBackground']);
+        // Cập nhật footer
+        Route::post('/settings/footer', [AdminSettingController::class, 'updateFooter']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

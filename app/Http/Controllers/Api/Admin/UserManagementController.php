@@ -81,14 +81,14 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             // 'duration_days' là tùy chọn, nếu không có sẽ ban vĩnh viễn (9999 năm)
-            'duration_days' => 'nullable|integer|min:1|max:36500'
+            'duration_days' => 'nullable|integer|min:1|max:3650'
         ]);
 
         if ($user->role === 'superadmin') {
              return response()->json(['message' => 'Không thể ban Super Admin.'], 403);
         }
 
-        $duration = $validated['duration_days'] ?? 36500; // 9999 năm = vĩnh viễn
+        $duration = $validated['duration_days'] ?? 3650; // 9999 năm = vĩnh viễn
         $bannedUntil = Carbon::now()->addDays($duration);
 
         // 1. Cập nhật CSDL

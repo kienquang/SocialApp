@@ -20,4 +20,14 @@ class SettingController extends Controller
             'logo_url' => $logoUrl
         ]);
     }
+
+    public function getBackground(){
+        $config = Configuration::where('key','site_background')->first();
+
+        $backgroundUrl = $config? $config->value: null;
+
+        return response()->json([
+            'background_url' => $backgroundUrl
+        ]);
+    }
 }

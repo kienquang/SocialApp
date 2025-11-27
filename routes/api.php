@@ -175,7 +175,7 @@ Route::middleware(['auth:sanctum', 'role:superadmin'])
     ->group(function () {
         Route::patch('/users/{user}/role', [UserRoleController::class, 'updateRole'])
              ->name('users.updateRole');
-
+        Route::get('/adminlist',[UserRoleController::class,'searchAdmin']);
 });
 
 

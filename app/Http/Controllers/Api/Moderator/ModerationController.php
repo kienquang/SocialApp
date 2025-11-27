@@ -23,12 +23,21 @@ class ModerationController extends Controller
      */
     public function getPostReports(Request $request)
     {
+        $validated = $request->validate([
+            'user' => 'sometimes|string|min:2|max:100',
+            'limit'=> 'sometimes|integer'
+        ]);
+
+        $searchTerm = $validated['user']?? "";
+        $limit = $validated['limit']?? 5;
         $reports = Report_post::with([
                             'reporter:id,name,avatar', // Tối ưu: Chỉ lấy 3 cột
                             'post' // Tải "bằng chứng" (Post)
                         ])
+                        ->whereHas('reporter', function ($query) use ($searchTerm) {
+                                   $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
                         ->orderBy('created_at', 'asc')
-                        ->paginate(20);
+                        ->paginate($limit);
 
         return ReportPostResource::collection($reports);
     }
@@ -38,12 +47,21 @@ class ModerationController extends Controller
      */
     public function getCommentReports(Request $request)
     {
+        $validated = $request->validate([
+            'user' => 'sometimes|string|min:2|max:100',
+            'limit'=> 'sometimes|integer'
+        ]);
+
+        $searchTerm = $validated['user']?? "";
+        $limit = $validated['limit']?? 5;
         $reports = Report_comment::with([
                             'reporter:id,name,avatar',
                             'comment' // Tải "bằng chứng" (Comment)
                         ])
+                        ->whereHas('reporter', function ($query) use ($searchTerm) {
+                                   $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
                         ->orderBy('created_at', 'asc')
-                        ->paginate(20);
+                        ->paginate($limit);
 
         return ReportCommentResource::collection($reports);
     }
@@ -53,12 +71,20 @@ class ModerationController extends Controller
      */
     public function getUserReports(Request $request)
     {
+        $validated = $request->validate([
+            'user' => 'sometimes|string|min:2|max:100',
+            'limit'=> 'sometimes|integer'
+        ]);
+        $searchTerm = $validated['user']?? "";
+        $limit = $validated['limit']?? 5;
         $reports = Report_user::with([
                             'reporter:id,name,avatar',
                             'reportedUser:id,name,avatar,role,banned_until' // Tải "đối tượng"
                         ])
+                        ->whereHas('reporter', function ($query) use ($searchTerm) {
+                                   $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
                         ->orderBy('created_at', 'asc')
-                        ->paginate(20);
+                        ->paginate($limit);
 
         return ReportUserResource::collection($reports);
     }

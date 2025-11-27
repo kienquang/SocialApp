@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Superadmin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -39,5 +40,21 @@ class UserRoleController extends Controller
             'message' => 'Cập nhật vai trò thành công.',
             'user' => $user->fresh(), // Trả về thông tin user đã cập nhật
         ]);
+    }
+
+    public function searchAdmin(Request $request){
+        $validated = $request->validate([
+            'role'=> 'sometimes|string',
+            'limit'=> 'sometimes|integer|min:1|max:20'
+        ]);
+
+        $searchTerm = $validated['role']?? "";
+        $limit = $validated['limit'] ?? 10;
+
+        $query = User::where('role', '!=', 'user')
+                        ->where('role', 'LIKE', $searchTerm)
+                        ->paginate($limit);
+
+        return UserResource::collection($query);
     }
 }

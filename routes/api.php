@@ -68,6 +68,8 @@ Route::get('/advertisements', [AdvertisementController::class, 'index']);
 
 // Lấy logo
 Route::get('/settings/logo', [SettingController::class, 'getLogo']);
+// Lấy background
+Route::get('/settings/background', [SettingController::class, 'getBackground']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -167,6 +169,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])
 
         //Cập nhật logo cho admin
         Route::post('/settings/logo', [AdminSettingController::class, 'updateLogo']);
+        // Cập nhật backgound
+        Route::post('/settings/background', [AdminSettingController::class, 'updateBackground']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

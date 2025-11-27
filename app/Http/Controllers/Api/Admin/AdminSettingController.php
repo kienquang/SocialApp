@@ -44,4 +44,29 @@ class AdminSettingController extends Controller
             return response()->json(['message' => 'Upload thất bại: ' . $e->getMessage()], 500);
         }
     }
+
+    public function updateBackground(Request $request){
+        $validate = $request->validate([
+            'file'=> 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+        $uploadedFile = Cloudinary::upload($validate['file']-> getRealPath(),[
+            'folder'=> 'background_assets',
+            'transformation'=>[
+                'quality'=>'auto',
+                'fetch_format'=>'auto'
+            ]
+        ]);
+
+        $backgoundUrl = $uploadedFile->getSecurePath();
+        Configuration::updateOrCreate(
+                ['key' => 'site_background'],
+                ['value' => $backgoundUrl]
+            );
+
+            return response()->json([
+                'message' => 'Background đã được cập nhật thành công.',
+                'background_url' => $backgoundUrl
+            ]);
+    }
 }

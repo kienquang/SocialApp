@@ -14,6 +14,7 @@ use App\Models\Report_comment;
 use App\Models\Report_post;
 use App\Models\Report_user;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 // ĐỔI TÊN CLASS: Từ ReportController -> ModerationController
 class ModerationController extends Controller
@@ -32,10 +33,15 @@ class ModerationController extends Controller
         $limit = $validated['limit']?? 5;
         $reports = Report_post::with([
                             'reporter:id,name,avatar', // Tối ưu: Chỉ lấy 3 cột
-                            'post' // Tải "bằng chứng" (Post)
+                            'post.user' // Tải "bằng chứng" (Post)
                         ])
-                        ->whereHas('reporter', function ($query) use ($searchTerm) {
-                                   $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
+                        ->whereHas('post', function ($postQuery) use ($searchTerm) {
+                        // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
+                        $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
+                            // Điều kiện: Tên của tác giả (User Model) chứa từ khóa
+                            $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
+                        });
+                        })
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
 
@@ -56,10 +62,15 @@ class ModerationController extends Controller
         $limit = $validated['limit']?? 5;
         $reports = Report_comment::with([
                             'reporter:id,name,avatar',
-                            'comment' // Tải "bằng chứng" (Comment)
+                            'comment.user' // Tải "bằng chứng" (Comment)
                         ])
-                        ->whereHas('reporter', function ($query) use ($searchTerm) {
-                                   $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
+                        ->whereHas('comment', function ($postQuery) use ($searchTerm) {
+                        // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
+                        $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
+                            // Điều kiện: Tên của tác giả (User Model) chứa từ khóa
+                            $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
+                        });
+                        })
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
 
@@ -81,7 +92,7 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'reportedUser:id,name,avatar,role,banned_until' // Tải "đối tượng"
                         ])
-                        ->whereHas('reporter', function ($query) use ($searchTerm) {
+                        ->whereHas('reportedUser', function ($query) use ($searchTerm) {
                                    $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
@@ -122,11 +133,81 @@ class ModerationController extends Controller
     }
     // Lấy các bài viết đã bị gỡ bỏ
     public function getRemovedPosts(Request $request){
-        $posts = Post::where('status', 'removed_by_mod')
-                        ->with(['user', 'category'])
-                        ->withCount('allComments as comments_count')
-                        ->orderby('updated_at','desc')
-                        ->paginate(29);
+        $request->validate([
+            'sort' => 'in:newest,hot', // Chỉ chấp nhận 2 giá trị
+            'limit' => 'sometimes|integer|min:1|max:50' ,
+            'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
+            'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
+            'user_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
+        $limit = $request->query('limit', 10);
+        $categoryId = $request->query('category'); // (MỚI)
+        $searchTerm = $request->input('q');
+        $userId = $request->query('user_id', null);
+
+        /** @var Builder $query */
+        $query = Post::query();
+
+        // (QUAN TRỌNG) Chỉ lấy các bài viết đã được 'published' (công khai)
+        $query->where('status', 'removed_by_mod');
+
+        // 1. Tải các quan hệ cần thiết
+        $query->with(['user', 'category']);
+
+        // 2. Tải các số đếm
+        // Dùng 'allComments' để đếm TẤT CẢ bình luận
+        $query->withCount('allComments as comments_count');
+        $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
+
+        // 5. Lọc (Filter) (Search (Tìm kiếm), Category (Chuyên mục), VÀ User (Người dùng))
+        if ($searchTerm) {
+            $query->where(function ($subQuery) use ($searchTerm) {
+                $likeTerm = '%' . $searchTerm . '%';
+                $subQuery->where('title', 'LIKE', $likeTerm)
+                         ->orWhere('content_html', 'LIKE', $likeTerm)
+                         ->orWhereHas('user', function ($userQuery) use ($likeTerm) {
+                             $userQuery->where('name', 'LIKE', $likeTerm);
+                         });
+            });
+        }
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        if ($userId) { // <-- (MỚI)
+            $query->where('user_id', $userId);
+        }
+
+        // 4. Sắp xếp
+        if ($sortType === 'hot') {
+            // Sắp xếp theo điểm vote (cao -> thấp)
+            // Cân nhắc thêm 'created_at' để ưu tiên bài mới hơn
+            $query->orderByDesc('vote_score');
+            $query->orderByDesc('created_at'); // Nếu cùng điểm, bài mới hơn lên trước
+        } else {
+            // Sắp xếp theo mới nhất (mặc định)
+            $query->orderByDesc('created_at');
+        }
+
+        // 8. (ĐÃ SỬA) Tải (load) vote (phiếu bầu) của user (người dùng) hiện tại
+        // Thử (try) lấy user (người dùng) từ 'sanctum' guard (bộ bảo vệ 'sanctum') (nếu token (mã) được gửi)
+        /** @var \App\Models\User|null $user */
+        $user = Auth::guard('sanctum')->user();
+
+        if ($user) {
+            // Nếu tìm thấy user (người dùng) (đã đăng nhập), tải (load) vote (phiếu bầu) của họ
+            $query->with(['votes' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }]);
+        }
+
+        // 6. Phân trang
+        /** @var \Illuminate\Pagination\LengthAwarePaginator $paginator */
+        $paginator = $query->paginate($limit);
+        $posts = $paginator->withQueryString();
+        //$posts = $query->paginate($limit)->withQueryString();
+
         return PostResource::collection($posts);
     }
     //Khôi phục các bài viết đã bị gỡ bỏ
@@ -144,10 +225,18 @@ class ModerationController extends Controller
 
     //Lấy các comment đã bị gỡ bỏ
     public function getRemovedComments(Request $request){
+        $validated = $request->validate([
+            'limit'=>'nullable|integer',
+            'user'=> 'nullable|string'
+        ]);
+        $limit= $validated['limit']?? 5;
+        $searchItem= $validated['user']?? "";
         $comments = Comment::where('status', 'removed_by_mod')
+                            ->whereHas('user', function ($query) use ($searchItem) {
+                                   $query->where('name', 'LIKE', '%'.$searchItem.'%');})
                             ->with(['user', 'post'])
                             ->orderby('updated_at', 'desc')
-                            ->paginate(20);
+                            ->paginate($limit);
         return CommentResource::collection($comments);
     }
 

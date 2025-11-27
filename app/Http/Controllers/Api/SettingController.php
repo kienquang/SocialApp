@@ -30,4 +30,16 @@ class SettingController extends Controller
             'background_url' => $backgroundUrl
         ]);
     }
+
+    public function getFooter(){
+        $keys = ['footer_description', 'footer_copyright', 'footer_links', 'footer_socials'];
+        $configs = Configuration::whereIn('key', $keys)->pluck('value','key');
+
+        return response()->json([
+            'description'=>$configs['footer_description']??'',
+            'copyright'   => $configs['footer_copyright'] ?? '',
+            'links'       => json_decode($configs['footer_links'] ?? '[]'),
+            'socials'     => json_decode($configs['footer_socials'] ?? '[]'),
+        ]);
+    }
 }

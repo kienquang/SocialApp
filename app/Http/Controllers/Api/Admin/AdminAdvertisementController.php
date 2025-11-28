@@ -10,10 +10,18 @@ use Illuminate\Http\Request;
 
 class AdminAdvertisementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $validated = $request->validate([
+            'limit'=> 'sometimes|integer',
+            'position' => 'sometimes|string'
+        ]);
+        $limit = $validated['limit']??10;
+        $position = $validated['position']?? '';
         // Admin (Quản trị viên) cần xem (see) tất cả (all) (kể cả 'inactive' (không hoạt động))
-        $ads = Advertisement::orderBy('position')->orderBy('display_order')->get();
+        $ads = Advertisement::orderBy('position')->orderBy('display_order')
+                                ->where('position','LIKE', '%'.$position.'%')
+                                ->paginate($limit);
         return AdvertisementResource::collection($ads);
     }
 

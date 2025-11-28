@@ -16,10 +16,15 @@ class AdvertisementResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'title' => $this->title,
             // (SỬA) Chỉ tối ưu (optimize) chất lượng (quality) / định dạng (format)
             'image_url' => $this->optimizeUrl($this->image_url),
             'link_url' => $this->link_url,
             'position' => $this->position,
+            'status' => $this->status,
+            'display_order'=> $this->display_order,
+            'created_at' =>$this->created_at,
+            'updated_at' => $this->updated_at,
             // (Chúng ta không cần (need) trả về (return) 'title' (tiêu đề) hoặc 'status' (trạng thái) cho public (công khai))
         ];
     }

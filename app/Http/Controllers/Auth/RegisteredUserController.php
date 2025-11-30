@@ -50,15 +50,15 @@ class RegisteredUserController extends Controller
                     ]);
                 }
 
-                // 2. Kiểm tra Email rác (Disposable)
-                // Cấu trúc mới: $data['email_quality']['is_disposable']
-                $isDisposable = $data['email_quality']['is_disposable'] ?? false;
+                // // 2. Kiểm tra Email rác (Disposable)
+                // // Cấu trúc mới: $data['email_quality']['is_disposable']
+                // $isDisposable = $data['email_quality']['is_disposable'] ?? false;
 
-                if ($isDisposable === true) {
-                     throw ValidationException::withMessages([
-                        'email' => 'Vui lòng không sử dụng email dùng một lần (email rác).',
-                    ]);
-                }
+                // if ($isDisposable === true) {
+                //      throw ValidationException::withMessages([
+                //         'email' => 'Vui lòng không sử dụng email dùng một lần (email rác).',
+                //     ]);
+                // }
 
                 // --- KẾT THÚC SỬA LỖI ---
 

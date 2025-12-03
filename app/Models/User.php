@@ -26,7 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
         'email',
         'password',
         'google_id',      // Dùng cho Socialite
-        'facebook_id',    // Dùng cho Socialite
+        'github_id',    // Dùng cho Socialite
         'avatar',
         'cover_photo_url',
         'banned_until',

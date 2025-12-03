@@ -14,8 +14,13 @@ class BroadcastServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+<<<<<<< HEAD
         Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
+=======
+        // Thêm middleware auth:sanctum để xác thực Bearer token
+        Broadcast::routes(['middleware' => ['auth:sanctum']]);
+>>>>>>> origin/huyBranch2
         require base_path('routes/channels.php');
     }
 }

@@ -43,6 +43,7 @@ class PostController extends Controller
             'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
             'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
             'user_id' => 'nullable|integer|exists:users,id',
+            'feed' => 'nullable|string|in:all,following'
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
@@ -50,6 +51,7 @@ class PostController extends Controller
         $categoryId = $request->query('category'); // (MỚI)
         $searchTerm = $request->input('q');
         $userId = $request->query('user_id', null);
+        $feedType = $request->query('feed', 'all');
 
         /** @var Builder $query */
         $query = Post::query();
@@ -64,6 +66,20 @@ class PostController extends Controller
         // Dùng 'allComments' để đếm TẤT CẢ bình luận
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
+
+        //Locj theo feed
+        if($feedType=== 'following'){
+            /** @var \App\Models\User|null $currentUser */
+            $currentUser= Auth::guard('sanctum')->user();
+
+            if(!$currentUser){
+                return response()->json(['message'=>'Ban can dang nhap de xem ban tin theo doi'],401);
+            }
+            //Lay danh sach id nhung ng minh theo doi
+            $followingIds = $currentUser->following()->pluck('users.id');
+
+            $query->whereIn('user_id',$followingIds);
+        }
 
         // 5. Lọc (Filter) (Search (Tìm kiếm), Category (Chuyên mục), VÀ User (Người dùng))
         if ($searchTerm) {

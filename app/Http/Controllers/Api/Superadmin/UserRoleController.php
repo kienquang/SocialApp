@@ -45,14 +45,17 @@ class UserRoleController extends Controller
     public function searchAdmin(Request $request){
         $validated = $request->validate([
             'role'=> 'sometimes|string',
-            'limit'=> 'sometimes|integer|min:1|max:20'
+            'limit'=> 'sometimes|integer|min:1|max:20',
+            'user'=>'sometimes|string'
         ]);
 
-        $searchTerm = $validated['role']?? "";
+        $searchTerm = $validated['role']??null;
         $limit = $validated['limit'] ?? 10;
+        $name= $validated['user']??null;
 
         $query = User::where('role', '!=', 'user')
                         ->where('role', 'LIKE', $searchTerm)
+                        ->where('name', 'LIKE','%'. $name.'%')
                         ->paginate($limit);
 
         return UserResource::collection($query);

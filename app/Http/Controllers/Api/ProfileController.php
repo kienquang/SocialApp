@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ProfileResource; // (Chúng ta sẽ tạo file này ở Bước 2)
 use App\Http\Resources\UserSearchResource;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,18 +19,22 @@ class ProfileController extends Controller
         public function search(Request $request)
         {
             $validated = $request->validate([
-                'q' => 'required|string|min:2|max:100', // Bắt buộc phải có 'q'
+                'q' => 'sometimes|string|min:2|max:100', // Bắt buộc phải có 'q'
                 'limit' => 'sometimes|integer|min:1|max:20' // Giới hạn (Limit)
             ]);
 
-            $searchTerm = $validated['q'];
+            $searchTerm = $validated['q'] ?? "";
             $limit = $validated['limit'] ?? 5; // Mặc định (Default) lấy 5
 
             $users = User::where('name', 'LIKE', '%' . $searchTerm . '%')
                         // Chỉ tìm user (người dùng) 'user', không tìm 'admin' (quản trị viên)
                         ->where('role', 'user')
-                        ->limit($limit)
-                        ->get();
+                        ->where(function ($query) {
+                        // BẮT ĐẦU NHÓM BẰNG DẤU NGOẶC ĐƠN
+                        $query->where('banned_until', '<', Carbon::now()) // 1. Ban đã hết hạn
+                                ->orWhereNull('banned_until');              // 2. HOẶC chưa từng bị ban
+                    })
+                        ->paginate($limit);
 
             // Dùng Resource (Định dạng) "nhẹ" (lightweight) mới
             return UserSearchResource::collection($users);

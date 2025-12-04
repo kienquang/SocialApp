@@ -55,6 +55,11 @@ class FollowController extends Controller
                 'follower_id' => $currentUser->id,
                 'followed_id' => $user->id,
                 'created_at' => now(),
+                'sender' => [
+                    'id' => $currentUser->id,
+                    'name' => $currentUser->name,
+                    'avatar' => $currentUser->avatar,
+                ]
             ];
             $notification = Notification::create([
                 'sender_id' => $currentUser->id,

@@ -15,6 +15,7 @@ use App\Events\PostCreatedNotification;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\StoreUserPostNotification;
 use App\Models\Notification;
+use App\Jobs\PostNotification;
 class PostController extends Controller
 {
     /**
@@ -42,6 +43,7 @@ class PostController extends Controller
             'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
             'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
             'user_id' => 'nullable|integer|exists:users,id',
+            'feed' => 'nullable|string|in:all,following'
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
@@ -49,6 +51,7 @@ class PostController extends Controller
         $categoryId = $request->query('category'); // (MỚI)
         $searchTerm = $request->input('q');
         $userId = $request->query('user_id', null);
+        $feedType = $request->query('feed', 'all');
 
         /** @var Builder $query */
         $query = Post::query();
@@ -57,13 +60,26 @@ class PostController extends Controller
         $query->where('status', 'published');
 
         // 1. Tải các quan hệ cần thiết
-        // (MỚI: Thêm 'category')
         $query->with(['user', 'category']);
 
         // 2. Tải các số đếm
-        // Dùng 'allComments' (đã sửa) để đếm TẤT CẢ bình luận
+        // Dùng 'allComments' để đếm TẤT CẢ bình luận
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
+
+        //Locj theo feed
+        if($feedType=== 'following'){
+            /** @var \App\Models\User|null $currentUser */
+            $currentUser= Auth::guard('sanctum')->user();
+
+            if(!$currentUser){
+                return response()->json(['message'=>'Ban can dang nhap de xem ban tin theo doi'],401);
+            }
+            //Lay danh sach id nhung ng minh theo doi
+            $followingIds = $currentUser->following()->pluck('users.id');
+
+            $query->whereIn('user_id',$followingIds);
+        }
 
         // 5. Lọc (Filter) (Search (Tìm kiếm), Category (Chuyên mục), VÀ User (Người dùng))
         if ($searchTerm) {
@@ -146,11 +162,15 @@ class PostController extends Controller
         $post_notification = [
             'post_id' => $post->id,
             'title' => $post->title,
-            'author_id' => $user->id,
             'created_at' => now(),
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
         ];
 
-        event(new PostCreatedNotification((object)$post_notification));
+        dispatch(new PostNotification((object)$post_notification,$user->followers()->pluck('users.id')->toArray()))->onQueue('notification');
 
         $notification=Notification::create([
             'sender_id' => $user->id,

@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CommentNotification implements ShouldBroadcast
+class CommentSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -32,7 +32,7 @@ class CommentNotification implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel("notifications.{$this->comment->author_id}"); //
+        return new PrivateChannel("comment.{$this->comment->post_id}"); //
     }
     public function broadcastWith()
     {
@@ -40,7 +40,7 @@ class CommentNotification implements ShouldBroadcast
             'id' => $this->comment->id,
             'post_id' => $this->comment->post_id,
             'parent_id' => $this->comment->parent_id,
-            'type' => 'comment',
+            'content' => $this->comment->content,
             'created_at' => $this->comment->created_at->toDateTimeString(),
             'sender' => [
                 'id' => $this->comment->sender['id'],

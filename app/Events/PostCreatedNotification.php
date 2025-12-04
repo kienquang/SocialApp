@@ -16,10 +16,12 @@ class PostCreatedNotification implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $post;
-    public function __construct($post)
+    public $post_notification;
+    public $followerId;
+    public function __construct($post_notifcation,$followerId)
     {
-        $this->post = $post;
+        $this->post_notification = $post_notifcation;
+        $this->followerId = $followerId;
     }
 
     /**
@@ -29,16 +31,20 @@ class PostCreatedNotification implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('notifications'); // broadcast chung 1 lần
+        return new PrivateChannel("notifications.{$this->followerId}"); // broadcast chung 1 lần
     }
     public function broadcastWith()
     {
         return [
-            'post_id' => $this->post->post_id,
-            'title' => $this->post->title,
-            'author_id' => $this->post->author_id,
+            'post_id' => $this->post_notification->post_id,
+            'title' => $this->post_notification->title,
             'type' => 'post',
-            'created_at' => $this->post->created_at->toDateTimeString(),
+            'created_at' => $this->post_notification->created_at->toDateTimeString(),
+            'sender' => [
+                'id' => $this->post_notification->sender['id'],
+                'name' => $this->post_notification->sender['name'],
+                'avatar' => $this->post_notification->sender['avatar'],
+            ]
         ];
     }
 }

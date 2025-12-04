@@ -39,10 +39,14 @@ class replyCommentNotification implements ShouldBroadcast
         return [
             'reply_to_user_id' => $this->replyComment->reply_to_user_id,
             'post_id' => $this->replyComment->post_id,
-            'user_id' => $this->replyComment->user_id,
             'author_id' => $this->replyComment->author_id,
             'type' => 'reply_comment',
             'created_at' => $this->replyComment->created_at->toDateTimeString(),
+            'sender' => [
+                'id' => $this->replyComment->sender['id'],
+                'name' => $this->replyComment->sender['name'],
+                'avatar' => $this->replyComment->sender['avatar'],
+            ]
         ];
     }
 }

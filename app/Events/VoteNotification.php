@@ -40,10 +40,14 @@ class VoteNotification implements ShouldBroadcast
         return [
             'author_id' => $this->vote->author_id,
             'post_id' => $this->vote->post_id,
-            'user_id' => $this->vote->user_id,
             'vote_value' => $this->vote->vote,
             'type' => 'vote',
             'created_at' => $this->vote->created_at->toDateTimeString(),
+            'sender' => [
+                'id' => $this->vote->sender['id'],
+                'name' => $this->vote->sender['name'],
+                'avatar' => $this->vote->sender['avatar'],
+            ]
         ];
     }
 }

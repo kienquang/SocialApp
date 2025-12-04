@@ -58,11 +58,15 @@ class PostVoteController extends Controller
             {
                 $voteArr = [
                     //'id' => $user->votedPosts()->where('post_id', $post->id)->first()->pivot->id,
-                    'post_id' => $post->id,
                     'author_id' => $post->user_id,
-                    'user_id' => $user->id,
+                    'post_id' => $post->id,
                     'vote' => $voteValue,
                     'created_at' => $user->votedPosts()->where('post_id', $post->id)->first()->pivot->created_at,
+                    'sender' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'avatar' => $user->avatar,
+                    ],
                 ];
                 // Tạo notification record
                 $notification = Notification::create([

@@ -23,7 +23,7 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar', // Tối ưu: Chỉ lấy 3 cột
                             'post' // Tải "bằng chứng" (Post)
                         ])
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate(20);
 
         return ReportPostResource::collection($reports);
@@ -38,7 +38,7 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'comment' // Tải "bằng chứng" (Comment)
                         ])
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate(20);
 
         return ReportCommentResource::collection($reports);
@@ -53,7 +53,7 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'reportedUser:id,name,avatar,role,banned_until' // Tải "đối tượng"
                         ])
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate(20);
 
         return ReportUserResource::collection($reports);

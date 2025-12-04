@@ -116,7 +116,7 @@ Route::middleware(['auth:sanctum', 'role:moderator'])
         Route::get('/reports/comments', [ModerationController::class, 'getCommentReports']);
         Route::get('/reports/users', [ModerationController::class, 'getUserReports']);
 
-        // Xử lý/Xóa một báo cáo (sau khi đã hành động, ví dụ: gỡ bài)
+        // Xử lý/Xóa một báo cáo (sau khi đã hành động)
         Route::delete('/reports/posts/{reportPost}', [ModerationController::class, 'resolvePostReport']);
         Route::delete('/reports/comments/{reportComment}', [ModerationController::class, 'resolveCommentReport']);
         Route::delete('/reports/users/{reportUser}', [ModerationController::class, 'resolveUserReport']);

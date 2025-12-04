@@ -2,10 +2,22 @@
     "$schema": "https://json.schemastore.org/package.json",
     "private": true,
     "type": "module",
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite"
-    },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+
+    "serve": "php artisan serve",
+
+    "queue:default": "php artisan queue:work",
+    "queue:mark-read": "php artisan queue:work --queue=mark-read",
+    "queue:notification": "php artisan queue:work --queue=notification",
+
+    "queues": "concurrently -k -n default,mark-read,notification \"npm run queue:default\" \"npm run queue:mark-read\" \"npm run queue:notification\"",
+
+    "start": "concurrently -k -n serve,queues \"npm run serve\" \"npm run queues\""
+  },
+
+
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",

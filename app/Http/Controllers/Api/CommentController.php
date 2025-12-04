@@ -9,6 +9,15 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Events\CommentNotification;
+use App\Events\replyCommentNotification;
+use App\Models\Notification;
+use App\Models\UserNotification;
+use App\Events\CommentSent;
+use App\Jobs\StoreUserPostNotification;
+use Illuminate\Support\Facades\DB;
+
+use function Symfony\Component\String\u;
 
 class CommentController extends Controller
 {
@@ -48,21 +57,85 @@ class CommentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'content' => 'required|string',
-            // Bài viết phải tồn tại
-            'post_id' => ['required', Rule::exists('posts', 'id')],
-            // Nếu parent_id được cung cấp, nó cũng phải tồn tại
-            'parent_id' => ['nullable', Rule::exists('comments', 'id')],
+            'content'   => 'required|string',
+            'post_id'   => 'required|integer',
+            'parent_id' => 'nullable|integer',
         ]);
+        $post = Post::findOrFail($validated['post_id']);
+        $parentComment = null;
+        if (!empty($validated['parent_id'])) {
+            // findOrFail đảm bảo bình luận cha tồn tại
+            $parentComment = Comment::findOrFail($validated['parent_id']);
+        }
 
         /** @var \App\Models\User $user */ // <-- Thêm dòng này
         $user = Auth::user(); // <-- Gán user vào biến
 
         // Gọi 'posts()' từ biến $user
-        $comment = $user->comments()->create($validated);
+        $comment = $user->comments()->create($validated); //3
 
         // Tải 'user' ngay lập tức để trả về JSON cho đẹp
-        $comment->load('user');
+        //$comment->load('user'); thừa 1 truy vấn
+        $comment->setRelation('user', $user); // Sử dụng setRelation để tránh truy vấn thừa
+
+        // Phát sự kiện thông báo bình luận mới
+        // Tạo notification record
+        $notification = Notification::create([
+            'sender_id' => $user->id,
+            'type' => 'comment',
+            'post_id' => $post->id,
+            'comment_id' => $comment->id,
+            'created_at' => now(),
+        ]);
+
+        $cmt = [
+            'id' => $comment->id,
+            'post_id' => $comment->post_id,
+            'parent_id' => $comment->parent_id,
+            'author_id' => $post->user_id,
+            'created_at' => $comment->created_at,
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
+        ];
+        if($post->user_id != $user->id) {
+            // Nếu người bình luận là author, không gửi thông báo comnment về author
+        event(new CommentNotification((object)$cmt));
+
+        dispatch(new StoreUserPostNotification(
+            $notification->id,
+            $user->id,
+            $post->id,
+            $comment->id,
+            'comment',
+            [$post->user_id],
+        ))->onQueue('notification');
+        }
+
+        if ($comment->parent_id) {
+            // Đây là phản hồi cho một bình luận khác
+            // Gửi sự kiện replyCommentNotification
+            if($parentComment->user_id != $comment->user_id) {
+                // Nếu người trả lời là chính chủ bình luận cha, không gửi thông báo
+            $cmt['reply_to_user_id'] = $parentComment->user_id;
+            event(new replyCommentNotification((object)$cmt));
+            dispatch(new StoreUserPostNotification(
+                $notification->id,
+                $user->id,
+                $post->id,
+                $comment->id,
+                'reply_comment',
+                [$parentComment->user_id],
+            ))->onQueue('notification');
+            }
+        }
+
+        // Phát sự kiện CommentSent để broadcast qua kênh riêng tư
+        unset($cmt['reply_to_user_id']); // Loại bỏ quan hệ user để tránh dư thừa dữ liệu
+        $cmt['content'] = $comment->content;
+        event(new CommentSent((object)$cmt));
 
         return (new CommentResource($comment))
                 ->response()

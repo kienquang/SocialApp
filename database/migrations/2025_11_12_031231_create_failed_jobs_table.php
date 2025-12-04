@@ -13,11 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('message_reads', function (Blueprint $table) {
+        Schema::create('failed_jobs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('message_id')->constrained('messages')->onDelete('cascade');
-            $table->foreignId('reader_id')->constrained('users')->onDelete('cascade');
-            $table->timestamp('read_at')->useCurrent();
+            $table->string('uuid')->unique();
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
         });
     }
 
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('message_reads');
+        Schema::dropIfExists('failed_jobs');
     }
 };

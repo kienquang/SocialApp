@@ -130,10 +130,6 @@ class User extends Authenticatable implements MustVerifyEmail// implements MustV
     /**
      * Lấy các tin nhắn người dùng đã đọc.
      */
-    public function messageReads()
-    {
-        return $this->hasMany(Message_read::class, 'reader_id');
-    }
 
     /**
      * Lấy các lượt "mention" người dùng này đã thực hiện.

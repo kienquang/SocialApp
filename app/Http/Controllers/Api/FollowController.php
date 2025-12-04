@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\FollowedNotification;
+use App\Jobs\StoreUserPostNotification;
+use App\Models\Notification;
+use Mockery\Matcher\Not;
 
 class FollowController extends Controller
 {
@@ -46,6 +50,32 @@ class FollowController extends Controller
             $following->attach($user->id);
             $message = 'Đã theo dõi thành công.';
             $newIsFollowing = true;
+
+            $follow = [
+                'follower_id' => $currentUser->id,
+                'followed_id' => $user->id,
+                'created_at' => now(),
+                'sender' => [
+                    'id' => $currentUser->id,
+                    'name' => $currentUser->name,
+                    'avatar' => $currentUser->avatar,
+                ]
+            ];
+            $notification = Notification::create([
+                'sender_id' => $currentUser->id,
+                'type' => 'follow',
+                'created_at' => now(),
+            ]);
+            event(new FollowedNotification((object)$follow));
+
+            dispatch(new StoreUserPostNotification(
+                $notification->id,
+                $currentUser->id,
+                null,
+                null,
+                'follow',
+                [$user->id],
+            ))->onQueue('notification');
         }
 
         // 4. Lấy tổng số người theo dõi MỚI của user kia

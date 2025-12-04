@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate; // Dùng cho Policy
 use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
 use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
-
+use App\Models\User;
+use App\Events\PostCreatedNotification;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\StoreUserPostNotification;
+use App\Models\Notification;
+use App\Jobs\PostNotification;
 class PostController extends Controller
 {
     /**
@@ -154,6 +159,40 @@ class PostController extends Controller
             'status'=>'published',
         ]);
 
+        $post_notification = [
+            'post_id' => $post->id,
+            'title' => $post->title,
+            'created_at' => now(),
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
+        ];
+
+        dispatch(new PostNotification((object)$post_notification,$user->followers()->pluck('users.id')->toArray()))->onQueue('notification');
+
+        $notification=Notification::create([
+            'sender_id' => $user->id,
+            'type' => 'post',
+            'post_id' => $post->id,
+            'comment_id' => null,
+            'created_at' => now(),
+        ]);
+
+        $followerIds = $user->followers()->pluck('users.id')->toArray();
+        //dd($followerIds);
+
+        //dd($notificationData);
+        dispatch(new StoreUserPostNotification(
+            $notification->id,
+            $user->id,
+            $post->id,
+            null,
+            'post',
+            $followerIds
+        ))->onQueue('notification');
+
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
         // (MỚI: Thêm 'category')
         $post->load(['user', 'category']);
@@ -186,7 +225,7 @@ class PostController extends Controller
         $post->loadCount('allComments as comments_count');
         $post->loadSum('votes as vote_score', 'vote');
 
-
+        /** @var \App\Models\User|null $user */
         $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)
         if ($user) {

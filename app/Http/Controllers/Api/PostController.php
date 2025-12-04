@@ -225,7 +225,7 @@ class PostController extends Controller
         $post->loadCount('allComments as comments_count');
         $post->loadSum('votes as vote_score', 'vote');
 
-
+        /** @var \App\Models\User|null $user */
         $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)
         if ($user) {

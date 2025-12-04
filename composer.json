@@ -10,6 +10,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
+        "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.7",
         "mews/purifier": "^3.4",
         "pusher/pusher-php-server": "^7.2"

@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\ThirdAuthenticationController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [RegisteredUserController::class, 'store'])
@@ -35,3 +36,15 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->middleware('auth:sanctum')
                 ->name('logout');
+
+Route::get('/login/google/redirect', [ThirdAuthenticationController::class, 'redirectToGoogle'])
+                ->name('GoogleRedirect');
+
+Route::get('/login/google/callback', [ThirdAuthenticationController::class, 'handleGoogleCallback'])
+                ->name('GoogleCallback');
+
+Route::get('/login/github/redirect', [ThirdAuthenticationController::class, 'redirectToGithub'])
+                ->name('GithubRedirect');
+
+Route::get('/login/github/callback', [ThirdAuthenticationController::class, 'handleGithubCallback'])
+                ->name('GithubCallback');

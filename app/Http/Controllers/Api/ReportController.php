@@ -11,6 +11,9 @@ use App\Models\Report_user;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\PostReportSent;
+use App\Events\CommentReportSent;
+use App\Events\UserReportSent;
 
 class ReportController extends Controller
 {
@@ -55,6 +58,8 @@ class ReportController extends Controller
             'reason' => $validated['reason'],
         ]);
 
+        event(new PostReportSent($post->id, $reporter, $validated['reason'], $post));
+
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
 
@@ -91,6 +96,8 @@ class ReportController extends Controller
             'reason' => $validated['reason'],
         ]);
 
+        event(new CommentReportSent($comment->id, $reporter, $validated['reason'], $comment));
+
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
 
@@ -126,6 +133,8 @@ class ReportController extends Controller
             'reporter_id' => $reporter->id,
             'reason' => $validated['reason'],
         ]);
+
+        event(new UserReportSent($user->id, $reporter, $validated['reason'], $user));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }

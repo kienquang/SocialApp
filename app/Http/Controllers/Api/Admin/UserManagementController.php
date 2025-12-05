@@ -21,12 +21,18 @@ class UserManagementController extends Controller
      */
     public function getBannedList(Request $request)
     {
-        $limit = $request->input('limit', 20); // Mặc định 20
+        $validated = $request->validate([
+            'limit' => 'sometimes|integer|min:1',
+            'user' => 'sometimes|string'
+        ]);
+        $limit = $validated['limit']?? 20;
+        $searchUser = $validated['user']??null;
 
         // 1. Lấy (Fetch) các user (người dùng) có 'banned_until' (ban đến khi) không rỗng (null)
         //    VÀ ngày đó ở trong tương lai
         $bannedUsers = User::whereNotNull('banned_until')
                             ->where('banned_until', '>', now())
+                            ->where('name','LIKE','%'.$searchUser.'%')
                             ->orderBy('banned_until', 'asc') // Ưu tiên (priority) người sắp hết ban (khóa)
                             ->paginate($limit);
 

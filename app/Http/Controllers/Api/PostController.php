@@ -215,9 +215,6 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        // if ($post->status !== 'published') {
-        //      return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
-        // }
         /** @var \App\Models\User|null $user */
         $user= Auth::guard('sanctum')->user();
 

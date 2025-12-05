@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AdvertisementResource;
+use App\Http\Resources\PublicAdvertismentResource;
 use App\Models\Advertisement;
 use Illuminate\Http\Request;
+use Ramsey\Collection\Collection;
 
 class AdvertisementController extends Controller
 {
@@ -24,6 +26,6 @@ class AdvertisementController extends Controller
                             ->orderBy('display_order')
                             ->get();
 
-        return AdvertisementResource::collection($ads);
+        return PublicAdvertismentResource::collection($ads);
     }
 }

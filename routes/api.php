@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
+use App\Http\Controllers\Api\Admin\AdminSettingController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostVoteController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\Superadmin\UserRoleController;
 use App\Http\Controllers\Api\UserProfileController;
 use Illuminate\Http\Request;
@@ -63,6 +65,13 @@ Route::get('/users/search', [ProfileController::class, 'search'])->name('users.s
 
 // API (API) (Giao diện lập trình ứng dụng) Lấy (Get) Quảng cáo (Ad) (Public (Công khai))
 Route::get('/advertisements', [AdvertisementController::class, 'index']);
+
+// Lấy logo
+Route::get('/settings/logo', [SettingController::class, 'getLogo']);
+// Lấy background
+Route::get('/settings/background', [SettingController::class, 'getBackground']);
+// Lấy footer
+Route::get('/settings/footer', [SettingController::class, 'getFooter']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // API của Post
@@ -120,6 +129,15 @@ Route::middleware(['auth:sanctum', 'role:moderator'])
         Route::delete('/reports/posts/{reportPost}', [ModerationController::class, 'resolvePostReport']);
         Route::delete('/reports/comments/{reportComment}', [ModerationController::class, 'resolveCommentReport']);
         Route::delete('/reports/users/{reportUser}', [ModerationController::class, 'resolveUserReport']);
+
+        // Láy danh sách các post và comment bị gỡ
+        Route::get('/content/removed-posts', [ModerationController::class, 'getRemovedPosts']);
+        Route::get('/content/removed-comments', [ModerationController::class, 'getRemovedComments']);
+
+        // 3. (MỚI) Khôi phục nội dung
+        Route::post('/posts/{post}/restore', [ModerationController::class, 'restorePost']);
+        Route::post('/comments/{comment}/restore', [ModerationController::class, 'restoreComment']);
+
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])
@@ -150,6 +168,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         // (SỬA) Dùng (Use) POST (Gửi) cho update (cập nhật) để hỗ trợ (support) `form-data` (dữ liệu biểu mẫu) (file (tệp) upload (tải lên))
         Route::post('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'update']);
         Route::delete('/advertisements/{advertisement}', [AdminAdvertisementController::class, 'destroy']);
+
+        //Cập nhật logo cho admin
+        Route::post('/settings/logo', [AdminSettingController::class, 'updateLogo']);
+        // Cập nhật backgound
+        Route::post('/settings/background', [AdminSettingController::class, 'updateBackground']);
+        // Cập nhật footer
+        Route::post('/settings/footer', [AdminSettingController::class, 'updateFooter']);
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])
@@ -158,7 +183,7 @@ Route::middleware(['auth:sanctum', 'role:superadmin'])
     ->group(function () {
         Route::patch('/users/{user}/role', [UserRoleController::class, 'updateRole'])
              ->name('users.updateRole');
-
+        Route::get('/adminlist',[UserRoleController::class,'searchAdmin']);
 });
 
 

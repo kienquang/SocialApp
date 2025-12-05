@@ -11,6 +11,9 @@ use App\Models\Report_user;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\PostReportSent;
+use App\Events\CommentReportSent;
+use App\Events\UserReportSent;
 
 class ReportController extends Controller
 {
@@ -49,11 +52,15 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        Report_post::create([
-            'post_id' => $post->id,
+        $report = Report_post::create([
+            'post_id'     => $post->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
+
+        // Nếu PostReportSent đang mong id của post thì giữ nguyên $post->id
+        // Nếu muốn dùng id bản ghi report_post thì đổi thành $report->id
+        event(new PostReportSent($post->id, $reporter, $validated['reason'], $post));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -77,19 +84,29 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_comment::where('comment_id', $comment->id)
-                                 ->where('reporter_id', $reporter->id)
-                                 ->first();
+                                  ->where('reporter_id', $reporter->id)
+                                  ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo nội dung này rồi.'], 409);
         }
 
         // 3. Tạo báo cáo
-        Report_comment::create([
-            'comment_id' => $comment->id,
+        // ❗ Lưu lại bản ghi được tạo để lấy đúng id của report_comment
+        $report = Report_comment::create([
+            'comment_id'  => $comment->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
+
+        // ❗ Trước đây anh dùng $comment->id → sai: đó là id của comment
+        // Đúng: truyền id của report_comment để admin dùng id này làm việc với bảng report_comments
+        event(new CommentReportSent(
+            $report->id,              // id của bản ghi report_comments
+            $reporter,
+            $validated['reason'],
+            $comment                   // comment làm bằng chứng
+        ));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -113,19 +130,23 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_user::where('reported_user_id', $user->id)
-                              ->where('reporter_id', $reporter->id)
-                              ->first();
+                               ->where('reporter_id', $reporter->id)
+                               ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo người dùng này rồi.'], 409);
         }
 
         // 3. Tạo báo cáo
-        Report_user::create([
+        $report = Report_user::create([
             'reported_user_id' => $user->id,
-            'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reporter_id'      => $reporter->id,
+            'reason'           => $validated['reason'],
         ]);
+
+        // Tương tự PostReportSent, nếu UserReportSent đang dùng id user thì giữ $user->id
+        // Nếu sau này anh muốn xử lý theo từng report_user thì có thể đổi sang $report->id
+        event(new UserReportSent($user->id, $reporter, $validated['reason'], $user));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }

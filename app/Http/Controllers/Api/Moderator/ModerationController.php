@@ -35,7 +35,6 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar', // Tối ưu: Chỉ lấy 3 cột
                             'post.user' // Tải "bằng chứng" (Post)
                         ])
-<<<<<<< HEAD
                         ->whereHas('post', function ($postQuery) use ($searchTerm) {
                         // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
                         $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
@@ -45,10 +44,6 @@ class ModerationController extends Controller
                         })
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
-=======
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
->>>>>>> 25697107e27a3727c59d988f7a60532d5454465e
 
         return ReportPostResource::collection($reports);
     }
@@ -69,7 +64,6 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'comment.user' // Tải "bằng chứng" (Comment)
                         ])
-<<<<<<< HEAD
                         ->whereHas('comment', function ($postQuery) use ($searchTerm) {
                         // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
                         $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
@@ -79,10 +73,6 @@ class ModerationController extends Controller
                         })
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
-=======
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
->>>>>>> 25697107e27a3727c59d988f7a60532d5454465e
 
         return ReportCommentResource::collection($reports);
     }
@@ -102,15 +92,10 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'reportedUser:id,name,avatar,role,banned_until' // Tải "đối tượng"
                         ])
-<<<<<<< HEAD
                         ->whereHas('reportedUser', function ($query) use ($searchTerm) {
                                    $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
                         ->orderBy('created_at', 'asc')
                         ->paginate($limit);
-=======
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
->>>>>>> 25697107e27a3727c59d988f7a60532d5454465e
 
         return ReportUserResource::collection($reports);
     }

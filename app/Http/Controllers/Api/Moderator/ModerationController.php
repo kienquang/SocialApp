@@ -35,10 +35,6 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar', // Tối ưu: Chỉ lấy 3 cột
                             'post.user' // Tải "bằng chứng" (Post)
                         ])
-<<<<<<< HEAD
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
-=======
                         ->whereHas('post', function ($postQuery) use ($searchTerm) {
                         // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
                         $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
@@ -46,9 +42,8 @@ class ModerationController extends Controller
                             $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
                         });
                         })
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
->>>>>>> origin/kienBranch
 
         return ReportPostResource::collection($reports);
     }
@@ -69,10 +64,6 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'comment.user' // Tải "bằng chứng" (Comment)
                         ])
-<<<<<<< HEAD
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
-=======
                         ->whereHas('comment', function ($postQuery) use ($searchTerm) {
                         // Lọc các bản ghi Report_post chỉ khi Post của nó thỏa mãn điều kiện
                         $postQuery->whereHas('user', function ($userQuery) use ($searchTerm) {
@@ -80,9 +71,8 @@ class ModerationController extends Controller
                             $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
                         });
                         })
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
->>>>>>> origin/kienBranch
 
         return ReportCommentResource::collection($reports);
     }
@@ -102,15 +92,10 @@ class ModerationController extends Controller
                             'reporter:id,name,avatar',
                             'reportedUser:id,name,avatar,role,banned_until' // Tải "đối tượng"
                         ])
-<<<<<<< HEAD
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
-=======
                         ->whereHas('reportedUser', function ($query) use ($searchTerm) {
                                    $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
->>>>>>> origin/kienBranch
 
         return ReportUserResource::collection($reports);
     }

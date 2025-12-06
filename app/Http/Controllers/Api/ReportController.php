@@ -52,13 +52,13 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        Report_post::create([
+        $report = Report_post::create([
             'post_id' => $post->id,
             'reporter_id' => $reporter->id,
             'reason' => $validated['reason'],
         ]);
 
-        event(new PostReportSent($post->id, $reporter, $validated['reason'], $post));
+        event(new PostReportSent($report->id, $reporter, $validated['reason'], $post));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -90,13 +90,13 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        Report_comment::create([
+        $report = Report_comment::create([
             'comment_id' => $comment->id,
             'reporter_id' => $reporter->id,
             'reason' => $validated['reason'],
         ]);
 
-        event(new CommentReportSent($comment->id, $reporter, $validated['reason'], $comment));
+        event(new CommentReportSent($report->id, $reporter, $validated['reason'], $comment));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -128,13 +128,13 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        Report_user::create([
+        $report = Report_user::create([
             'reported_user_id' => $user->id,
             'reporter_id' => $reporter->id,
             'reason' => $validated['reason'],
         ]);
 
-        event(new UserReportSent($user->id, $reporter, $validated['reason'], $user));
+        event(new UserReportSent($report->id, $reporter, $validated['reason'], $user));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }

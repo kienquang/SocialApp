@@ -34,7 +34,7 @@ class AdvertisementsSeeder extends Seeder
             ],
             [
                 'title' => 'Quảng cáo In-Feed (Trong luồng) (Active (Hoạt động))',
-                'image_url' => 'https://res.cloudinary.com/demo/image/upload/q_auto:eco,f_auto/v1605205503/samples/landscapes/nature-mountains.jpg',
+                'image_url' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1765004690/advertisements/xxg9fi83q8hd6p3ddmsy.jpg',
                 'link_url' => 'https://example-partner-2.com',
                 'position' => 'in_feed', // Vị trí (Position) 2
                 'status' => 'active', // Đang hoạt động (active)

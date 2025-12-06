@@ -42,7 +42,7 @@ class ModerationController extends Controller
                             $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
                         });
                         })
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
 
         return ReportPostResource::collection($reports);
@@ -71,7 +71,7 @@ class ModerationController extends Controller
                             $userQuery->where('name', 'LIKE', '%'.$searchTerm.'%');
                         });
                         })
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
 
         return ReportCommentResource::collection($reports);
@@ -94,7 +94,7 @@ class ModerationController extends Controller
                         ])
                         ->whereHas('reportedUser', function ($query) use ($searchTerm) {
                                    $query->where('name', 'LIKE', '%'.$searchTerm.'%');})
-                        ->orderBy('created_at', 'asc')
+                        ->orderBy('created_at', 'desc')
                         ->paginate($limit);
 
         return ReportUserResource::collection($reports);

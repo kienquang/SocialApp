@@ -1,11 +1,10 @@
 <?php
 
 return [
-
     'paths' => [
         'api/*',
         'realtime/*',
-        'broadcasting/auth',
+        'broadcasting/*',
         'sanctum/csrf-cookie',
         'login',
         'logout',

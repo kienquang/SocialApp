@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
+
 class AdminAuthController extends Controller
 {
     /**
@@ -19,19 +20,16 @@ class AdminAuthController extends Controller
 
         $user = $request->user();
 
-        // KIỂM TRA QUYỀN NGAY LẬP TỨC
-        // Nếu không phải Mod hoặc Admin -> ĐÁ VĂNG RA
+        // Nếu không phải Mod/Admin/Superadmin -> từ chối
         if (!in_array($user->role, ['admin', 'superadmin', 'moderator'])) {
-
-
             throw ValidationException::withMessages([
                 'email' => 'Tài khoản này không có quyền truy cập quản trị.',
             ]);
         }
 
-        // Nếu là Admin, trả về token như bình thường
         $token = $user->createToken('admin-token')->plainTextToken;
 
+        // Lấy data từ UserResource như bình thường
         $userData = (new UserResource($user))->toArray($request);
 
         // CHỈ THÊM role KHI ĐĂNG NHẬP QUA CỔNG ADMIN

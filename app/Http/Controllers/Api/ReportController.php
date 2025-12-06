@@ -55,7 +55,7 @@ class ReportController extends Controller
         $report = Report_post::create([
             'post_id' => $post->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
 
         event(new PostReportSent($report->id, $reporter, $validated['reason'], $post));
@@ -82,8 +82,8 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_comment::where('comment_id', $comment->id)
-                                 ->where('reporter_id', $reporter->id)
-                                 ->first();
+                                  ->where('reporter_id', $reporter->id)
+                                  ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo nội dung này rồi.'], 409);
@@ -93,7 +93,7 @@ class ReportController extends Controller
         $report = Report_comment::create([
             'comment_id' => $comment->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
 
         event(new CommentReportSent($report->id, $reporter, $validated['reason'], $comment));
@@ -120,8 +120,8 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_user::where('reported_user_id', $user->id)
-                              ->where('reporter_id', $reporter->id)
-                              ->first();
+                               ->where('reporter_id', $reporter->id)
+                               ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo người dùng này rồi.'], 409);
@@ -130,8 +130,8 @@ class ReportController extends Controller
         // 3. Tạo báo cáo
         $report = Report_user::create([
             'reported_user_id' => $user->id,
-            'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reporter_id'      => $reporter->id,
+            'reason'           => $validated['reason'],
         ]);
 
         event(new UserReportSent($report->id, $reporter, $validated['reason'], $user));

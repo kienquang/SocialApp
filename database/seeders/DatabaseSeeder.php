@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             NotificationsSeeder::class,
             CommentsSeeder::class,
             ConversationsSeeder::class,
-            MentionsSeeder::class,
+            ConfigurationsSeeder::class,
             PostVotesSeeder::class,
             AdvertisementsSeeder::class,
             ReportsSeeder::class,

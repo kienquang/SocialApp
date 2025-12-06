@@ -53,14 +53,12 @@ class ReportController extends Controller
 
         // 3. Tạo báo cáo
         $report = Report_post::create([
-            'post_id'     => $post->id,
+            'post_id' => $post->id,
             'reporter_id' => $reporter->id,
             'reason'      => $validated['reason'],
         ]);
 
-        // Nếu PostReportSent đang mong id của post thì giữ nguyên $post->id
-        // Nếu muốn dùng id bản ghi report_post thì đổi thành $report->id
-        event(new PostReportSent($post->id, $reporter, $validated['reason'], $post));
+        event(new PostReportSent($report->id, $reporter, $validated['reason'], $post));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -92,21 +90,13 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        // ❗ Lưu lại bản ghi được tạo để lấy đúng id của report_comment
         $report = Report_comment::create([
-            'comment_id'  => $comment->id,
+            'comment_id' => $comment->id,
             'reporter_id' => $reporter->id,
             'reason'      => $validated['reason'],
         ]);
 
-        // ❗ Trước đây anh dùng $comment->id → sai: đó là id của comment
-        // Đúng: truyền id của report_comment để admin dùng id này làm việc với bảng report_comments
-        event(new CommentReportSent(
-            $report->id,              // id của bản ghi report_comments
-            $reporter,
-            $validated['reason'],
-            $comment                   // comment làm bằng chứng
-        ));
+        event(new CommentReportSent($report->id, $reporter, $validated['reason'], $comment));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -144,9 +134,7 @@ class ReportController extends Controller
             'reason'           => $validated['reason'],
         ]);
 
-        // Tương tự PostReportSent, nếu UserReportSent đang dùng id user thì giữ $user->id
-        // Nếu sau này anh muốn xử lý theo từng report_user thì có thể đổi sang $report->id
-        event(new UserReportSent($user->id, $reporter, $validated['reason'], $user));
+        event(new UserReportSent($report->id, $reporter, $validated['reason'], $user));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }

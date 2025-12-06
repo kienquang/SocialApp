@@ -158,4 +158,20 @@ class UserProfileController extends Controller
         // (LOGIC (LOGIC) CỦA BẠN) Trả về (Return) UserResource (Định dạng Người dùng)
         return new UserResource($user->fresh());
     }
+
+    public function destroy(Request $request){
+        $request->validate([
+            'password'=> ['required', 'current_password'],
+        ]);
+
+        $user= $request->user();
+
+        $user->tokens()->delete();
+
+        $user-> delete();
+
+        return response()->json([
+            'message'=>'Tài khoản của bạn đã được xóa',
+        ]);
+    }
 }

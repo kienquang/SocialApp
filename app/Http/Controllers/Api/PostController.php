@@ -150,6 +150,13 @@ class PostController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        //Kiểm tra tài khoản đã xác thực chưa
+        if($user->email_verified_at == NULL){
+            return response()->json([
+                'message'=>'Bạn phải xác thực email để đăng bài',
+            ]);
+        }
+
         // Tạo bài viết
         $post = $user->posts()->create([
             'title' => $validated['title'],

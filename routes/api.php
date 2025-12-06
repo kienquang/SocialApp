@@ -102,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //  đổi (change) mật khẩu (password)
     Route::patch('/profile/password', [UserProfileController::class, 'updatePassword']);
 
+    // xóa tài khoản
+    Route::delete('/profile/delete', [UserProfileController::class, 'destroy']);
+
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
 

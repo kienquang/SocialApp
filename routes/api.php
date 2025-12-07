@@ -142,6 +142,9 @@ Route::middleware(['auth:sanctum', 'role:moderator'])
         Route::post('/posts/{post}/restore', [ModerationController::class, 'restorePost']);
         Route::post('/comments/{comment}/restore', [ModerationController::class, 'restoreComment']);
 
+        // Route Thống kê (Dashboard Stats)
+        Route::get('/dashboard/stats', [DashboardController::class, 'index']);  
+
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])
@@ -180,8 +183,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         // Cập nhật footer
         Route::post('/settings/footer', [AdminSettingController::class, 'updateFooter']);
 
-        // Route Thống kê (Dashboard Stats)
-        Route::get('/dashboard/stats', [DashboardController::class, 'index']);
+
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

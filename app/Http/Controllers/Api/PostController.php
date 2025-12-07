@@ -215,8 +215,19 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        if ($post->status !== 'published') {
-             return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
+        /** @var \App\Models\User|null $user */
+        $user= Auth::guard('sanctum')->user();
+
+        //kiểm tra quyền xem
+        $canView = false;
+        if($post->status === 'published'){
+            $canView = true;
+        }elseif ($user && $user->can('view', $post)){
+            $canView = true;
+        }
+        //nếu cả 2 đều k thỏa mản
+        if(!$canView){
+            return response()->json(['message'=>' Bai viet khong ton tai'], 404);
         }
         // Tải các quan hệ chính
         $post->load(['user', 'category']);

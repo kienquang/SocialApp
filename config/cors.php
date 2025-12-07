@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     'paths' => [
         'api/*',
         'realtime/*',

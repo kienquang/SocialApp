@@ -20,6 +20,11 @@ class ChatController extends Controller
     public function conversationList() {
     $userId = auth()->id();
     //$userId = 1;
+    if(auth()->user()->email_verified_at == null) {
+            return response()->json([
+                'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
+            ], 403);
+        }
     $conversations = Conversation::with(['userOne', 'userTwo', 'lastMessage'])
         ->where('user_one_id', $userId)
         ->orWhere('user_two_id', $userId)
@@ -58,6 +63,11 @@ class ChatController extends Controller
         $userId = auth()->id();
         //$userId = 1;
         //dd($userId);
+        if(auth()->user()->email_verified_at == null) {
+            return response()->json([
+                'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
+            ], 403);
+        }
         $messages = Message::where(function ($query) use ($userId, $receiverId) {
                             $query->where('sender_id', $userId)
                                   ->where('receiver_id', $receiverId);
@@ -103,7 +113,11 @@ class ChatController extends Controller
             'image_url' => 'required_without:content|nullable|string',
         ]);
         //dd(Message::class);
-
+        if(auth()->user()->email_verified_at == null) {
+            return response()->json([
+                'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
+            ], 403);
+        }
         $receiver = User::findOrFail($request->receiver_id);
 
         $message = Message::create([

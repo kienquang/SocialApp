@@ -44,6 +44,7 @@ class ChatController extends Controller
     // Lấy page hiện tại: conv mới nhất trước
     $conversations = $baseQuery
         ->orderByDesc('last_message_id')
+        //->orderByDesc('conversations.id')
         ->skip(($page - 1) * $perPage)
         ->take($perPage)
         ->get();
@@ -129,6 +130,7 @@ class ChatController extends Controller
 
     $messages = $baseQuery
         ->orderBy('created_at', 'asc') // vẫn giữ asc như logic cũ
+       // ->orderBy('id', 'asc') // <--- THÊM DÒNG NÀY
         ->skip($offset)
         ->take($perPage)
         ->get();

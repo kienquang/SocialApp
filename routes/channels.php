@@ -19,15 +19,19 @@ use Illuminate\Support\Facades\Broadcast;
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
+
 Broadcast::channel('conversation.change.{id}', function ($user, $id) {
     return (int)$user->id === (int)$id;
 });
+
 Broadcast::channel('notifications.{id}', function ($user, $id) {
     return (int)$user->id === (int)$id;
 });
+
 Broadcast::channel('comment.{postId}', function ($user, $postId) {
     return true;
 });
+
 Broadcast::channel('reports.post', function ($user) {
     return true;
 });

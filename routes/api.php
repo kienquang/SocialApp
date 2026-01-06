@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AdminAdvertisementController;
 use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\UserManagementController;
 use App\Http\Controllers\Api\Admin\AdminSettingController;
+use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CommentController;
@@ -101,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //  đổi (change) mật khẩu (password)
     Route::patch('/profile/password', [UserProfileController::class, 'updatePassword']);
 
+    // xóa tài khoản
+    Route::delete('/profile/delete', [UserProfileController::class, 'destroy']);
+
     // --- MODULE FOLLOW ---
     Route::post('/users/{user}/follow', [FollowController::class, 'toggleFollow']);
 
@@ -137,6 +141,9 @@ Route::middleware(['auth:sanctum', 'role:moderator'])
         // 3. (MỚI) Khôi phục nội dung
         Route::post('/posts/{post}/restore', [ModerationController::class, 'restorePost']);
         Route::post('/comments/{comment}/restore', [ModerationController::class, 'restoreComment']);
+
+        // Route Thống kê (Dashboard Stats)
+        Route::get('/dashboard/stats', [DashboardController::class, 'index']);  
 
 });
 
@@ -175,6 +182,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])
         Route::post('/settings/background', [AdminSettingController::class, 'updateBackground']);
         // Cập nhật footer
         Route::post('/settings/footer', [AdminSettingController::class, 'updateFooter']);
+
+
 });
 
 Route::middleware(['auth:sanctum', 'role:superadmin'])

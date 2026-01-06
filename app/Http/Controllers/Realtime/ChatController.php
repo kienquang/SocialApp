@@ -20,72 +20,130 @@ class ChatController extends Controller
     public function conversationList() {
     $userId = auth()->id();
     //$userId = 1;
-    if(auth()->user()->email_verified_at == null) {
-            return response()->json([
-                'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
-            ], 403);
-        }
-    $conversations = Conversation::with(['userOne', 'userTwo', 'lastMessage'])
-        ->where('user_one_id', $userId)
-        ->orWhere('user_two_id', $userId)
+
+    if (auth()->user()->email_verified_at == null) {
+        return response()->json([
+            'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
+        ], 403);
+    }
+
+    // PHÂN TRANG
+    $perPage = (int) request('per_page', 20);
+    $page    = max(1, (int) request('page', 1));
+
+    // Query cơ bản (giữ logic cũ)
+    $baseQuery = Conversation::with(['userOne', 'userTwo', 'lastMessage'])
+        ->where(function ($q) use ($userId) {
+            $q->where('user_one_id', $userId)
+              ->orWhere('user_two_id', $userId);
+        });
+
+    // Tổng số conversation
+    $total = (clone $baseQuery)->count();
+
+    // Lấy page hiện tại: conv mới nhất trước
+    $conversations = $baseQuery
         ->orderByDesc('last_message_id')
+        //->orderByDesc('conversations.id')
+        ->skip(($page - 1) * $perPage)
+        ->take($perPage)
         ->get();
 
     $conversationList = $conversations->map(function($conv) use ($userId) {
         $otherUser = $conv->user_one_id == $userId ? $conv->userTwo : $conv->userOne;
+
         return [
             'conversation_id' => $conv->id,
             'user' => [
-                'id' => $otherUser->id,
-                'name' => $otherUser->name,
+                'id'     => $otherUser->id,
+                'name'   => $otherUser->name,
                 'avatar' => $otherUser->avatar
             ],
             'last_message' => $conv->lastMessage ? [
-                'id' => $conv->lastMessage ? $conv->lastMessage->id : null,
-                'sender_id' => $conv->lastMessage ? $conv->lastMessage->sender_id : null,
+                'id'          => $conv->lastMessage ? $conv->lastMessage->id : null,
+                'sender_id'   => $conv->lastMessage ? $conv->lastMessage->sender_id : null,
                 'receiver_id' => $conv->lastMessage ? $conv->lastMessage->receiver_id : null,
-                'content' => $conv->lastMessage ? $conv->lastMessage->content : null,
-                'image_url' => $conv->lastMessage ? $conv->lastMessage->image_url : null,
-                'created_at' => $conv->lastMessage ? $conv->lastMessage->created_at : null,
+                'content'     => $conv->lastMessage ? $conv->lastMessage->content : null,
+                'image_url'   => $conv->lastMessage ? $conv->lastMessage->image_url : null,
+                'created_at'  => $conv->lastMessage ? $conv->lastMessage->created_at : null,
             ] : null,
-            'last_read_message_id' => $conv->user_one_id == $userId ? $conv->last_read_message_id_one : $conv->last_read_message_id_two,
+            'last_read_message_id' => $conv->user_one_id == $userId
+                ? $conv->last_read_message_id_one
+                : $conv->last_read_message_id_two,
         ];
     });
 
-    return response()->json($conversationList);
-    }
+    $lastPage = $perPage > 0 ? (int) ceil($total / $perPage) : 1;
+
+    return response()->json([
+        'data' => $conversationList,
+        'meta' => [
+            'current_page' => $page,
+            'per_page'     => $perPage,
+            'total'        => $total,
+            'last_page'    => $lastPage,
+            'has_more'     => $page < $lastPage,
+        ],
+    ]);
+}
+
 
     /**
      * Lấy lịch sử tin nhắn giữa user hiện tại và 1 người cụ thể
      */
     public function fetchMessages($receiverId)
-    {
-        $userId = auth()->id();
-        //$userId = 1;
-        //dd($userId);
-        if(auth()->user()->email_verified_at == null) {
-            return response()->json([
-                'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
-            ], 403);
-        }
-        $messages = Message::where(function ($query) use ($userId, $receiverId) {
+{
+    $userId = auth()->id();
+    //$userId = 1;
+
+    if (auth()->user()->email_verified_at == null) {
+        return response()->json([
+            'error' => 'Email chưa được xác thực. Vui lòng xác thực email để sử dụng chức năng chat.'
+        ], 403);
+    }
+
+    // PHÂN TRANG
+    $perPage = (int) request('per_page', 20);
+    $page    = max(1, (int) request('page', 1));
+
+    // Query chung cho 2 chiều (giữ logic cũ)
+    $baseQuery = Message::where(function ($query) use ($userId, $receiverId) {
                             $query->where('sender_id', $userId)
                                   ->where('receiver_id', $receiverId);
                         })
                         ->orWhere(function ($query) use ($userId, $receiverId) {
                             $query->where('sender_id', $receiverId)
                                   ->where('receiver_id', $userId);
-                        })
-                        ->orderBy('created_at', 'asc')
-                        ->get();
+                        });
 
-        // Cập nhật trạng thái đã đọc trong cuộc trò chuyện
+    // Tổng số tin nhắn giữa 2 người
+    $total = (clone $baseQuery)->count();
+
+    // Tính last_page và tránh page vượt quá
+    $lastPage = $perPage > 0 ? (int) ceil(max(1, $total) / $perPage) : 1;
+    if ($page > $lastPage) {
+        $page = $lastPage;
+    }
+
+    // Tính offset để page 1 là 20 tin NHẮN MỚI NHẤT
+    $offset = max(0, $total - $page * $perPage);
+
+    $messages = $baseQuery
+        ->orderBy('created_at', 'asc') // vẫn giữ asc như logic cũ
+       // ->orderBy('id', 'asc') // <--- THÊM DÒNG NÀY
+        ->skip($offset)
+        ->take($perPage)
+        ->get();
+
+    // Cập nhật trạng thái đã đọc trong cuộc trò chuyện (logic cũ)
+    $lastMessage = $messages->last();
+    if ($lastMessage) {
         if ($userId < $receiverId) {
             $conversation = Conversation::where('user_one_id', $userId)
                                         ->where('user_two_id', $receiverId)
                                         ->first();
             if ($conversation) {
-                $conversation->last_read_message_id_one = $messages->last()->id ?? null;
+                $conversation->last_read_message_id_one = $lastMessage->id;
                 $conversation->save();
             }
         } else {
@@ -93,13 +151,23 @@ class ChatController extends Controller
                                         ->where('user_two_id', $userId)
                                         ->first();
             if ($conversation) {
-                $conversation->last_read_message_id_two = $messages->last()->id ?? null;
+                $conversation->last_read_message_id_two = $lastMessage->id;
                 $conversation->save();
             }
         }
-
-        return response()->json($messages);
     }
+
+    return response()->json([
+        'data' => $messages,
+        'meta' => [
+            'current_page' => $page,
+            'per_page'     => $perPage,
+            'total'        => $total,
+            'last_page'    => $lastPage,
+            'has_more'     => $page < $lastPage,
+        ],
+    ]);
+}
 
     /**
      * Gửi tin nhắn (văn bản hoặc ảnh)

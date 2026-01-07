@@ -135,7 +135,7 @@ class ChatController extends Controller
         ->take($perPage)
         ->get();
 
-    // Cập nhật trạng thái đã đọc trong cuộc trò chuyện (logic cũ)
+    // Cập nhật trạng thái đã đọc trong cuộc trò chuyện
     $lastMessage = $messages->last();
     if ($lastMessage) {
         if ($userId < $receiverId) {

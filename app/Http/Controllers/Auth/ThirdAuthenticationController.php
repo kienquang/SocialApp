@@ -36,6 +36,7 @@ class ThirdAuthenticationController extends Controller
                 'avatar' => $googleUser->getAvatar(),
             ]);
         }
+
         $token = $user->createToken('google-auth')->plainTextToken;
         return view('callback', [
             'token' => $token,

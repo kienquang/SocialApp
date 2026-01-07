@@ -28,7 +28,7 @@ class UserProfileController extends Controller
                 'name' => [
                     'required',
                     'string',
-                    'max:100',
+                    'max:50',
                     // (Tùy chọn) Đảm bảo tên mới không trùng
                     // Rule (Quy tắc)::unique('users')->ignore($user->id),
                 ],

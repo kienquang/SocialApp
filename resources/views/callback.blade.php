@@ -16,9 +16,9 @@
         };
 
         // Gửi data về cửa sổ cha (Trang Login Vuejs)
-        // '*' cho phép gửi đến mọi domain (hoặc thay bằng 'http://localhost:5173' để bảo mật hơn)
+        // '*' cho phép gửi đến mọi domain thay bằng 'http://localhost:5173' để bảo mật hơn
         if (window.opener) {
-            window.opener.postMessage(data, '*');
+            window.opener.postMessage(data, 'http://localhost:5173')
         }
 
         // Đóng popup này lại

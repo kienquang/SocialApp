@@ -93,6 +93,10 @@ class ChatController extends Controller
      */
     public function fetchMessages($receiverId)
 {
+    validator(['receiverId' => $receiverId], [
+        'receiverId' => 'required|integer|exists:users,id|not_in:' . auth()->id(),
+    ])->validate();
+
     $userId = auth()->id();
     //$userId = 1;
 
@@ -250,7 +254,12 @@ class ChatController extends Controller
         ], 500);
      }
     }
-
+     public function updateReadMessageForReceiver($senderId){
+        validator(['senderId' => $senderId], [
+            'senderId' => 'required|integer|exists:users,id|not_in:' . auth()->id(),
+        ])->validate();
+        $this->updateOrCreateConversation($senderId);
+     }
     public function updateOrCreateConversation($receiverId, $lastMessageId = null)
     {
         $senderId = auth()->id();
@@ -278,6 +287,6 @@ class ChatController extends Controller
                 'user_two_id' => $userTwo,
             ],
             $valuesToUpdate // Dữ liệu để cập nhật hoặc tạo mới
-        );
+        );//vì mỗi conversation chỉ có 1 cặp user_one_id và user_two_id, nên không cần conversation_id để cập nhật
     }
 }

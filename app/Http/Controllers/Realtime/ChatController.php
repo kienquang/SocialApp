@@ -254,13 +254,14 @@ class ChatController extends Controller
         ], 500);
      }
     }
-     public function updateReadMessageForReceiver($senderId){
-        validator(['senderId' => $senderId], [
+     public function updateReadMessageForReceiver(Request $request){
+        $request->validate([
             'senderId' => 'required|integer|exists:users,id|not_in:' . auth()->id(),
-        ])->validate();
-        $this->updateOrCreateConversation($senderId);
+            'lastMessageId' => 'required|integer|exists:messages,id',
+        ]);
+        $this->updateOrCreateConversation($request->senderId, $request->lastMessageId);
      }
-    public function updateOrCreateConversation($receiverId, $lastMessageId = null)
+    public function updateOrCreateConversation($receiverId, $lastMessageId = null, )
     {
         $senderId = auth()->id();
 

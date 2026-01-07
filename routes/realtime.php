@@ -14,7 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/messages/{receiverId}',[ChatController::class,'fetchMessages']);
 
-    Route::post('/updateReadMessageForReceiver/{senderId}',[ChatController::class,'updateReadMessageForReceiver']);
+    Route::post('/updateReadMessageForReceiver',[ChatController::class,'updateReadMessageForReceiver']);
 
     Route::get('/test-realtime', function (Request $request) {
         return response()->json(['message' => 'Realtime route is working!']);

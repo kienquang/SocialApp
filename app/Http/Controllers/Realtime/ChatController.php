@@ -210,6 +210,7 @@ class ChatController extends Controller
             auth()->user()->name,
             $message->receiver_id,
             $message->content,
+            $message->id,
             $message->image_url,
             $message->created_at
         ));

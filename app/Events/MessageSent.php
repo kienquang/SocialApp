@@ -18,6 +18,7 @@ class MessageSent implements ShouldBroadcast
     public $SenderName;
     public $RecieverId;
     public $MessageText;
+    public $MessageId;
     public $imageUrl;
     public $createAt;
     /**
@@ -25,12 +26,13 @@ class MessageSent implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct($SenderId, $SenderName, $RecieverId, $MessageText, $imageUrl = null, $createAt)
+    public function __construct($SenderId, $SenderName, $RecieverId, $MessageText, $MessageId, $imageUrl = null, $createAt)
     {
         $this->SenderId = $SenderId;
         $this->SenderName = $SenderName;
         $this->RecieverId = $RecieverId;
         $this->MessageText = $MessageText;
+        $this->MessageId = $MessageId;
         $this->imageUrl = $imageUrl;
         $this->createAt = $createAt;
     }
@@ -55,6 +57,7 @@ class MessageSent implements ShouldBroadcast
             'SenderName' => $this->SenderName,
             'RecieverId' => $this->RecieverId,
             'MessageText' => $this->MessageText,
+            'MessageId' => $this->MessageId,
             'imageUrl' => $this->imageUrl,
             'createAt' => $this->createAt,
         ];

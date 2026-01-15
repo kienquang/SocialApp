@@ -43,3 +43,15 @@ Broadcast::channel('reports.comment', function ($user) {
 Broadcast::channel('reports.user', function ($user) {
     return $user->role === 'admin' || $user->role === 'superadmin';
 });
+
+Broadcast::channel('online', function ($user) {
+    if (auth()->check()) {
+        //Mảng trả về ở đây sẽ là dữ liệu mà Frontend của người khác nhận được trong sự kiện 'joining' và 'here'.
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'avatar' => $user->avatar_url,
+        ];
+    }
+    // Nếu trả về null hoặc false -> Từ chối kết nối (403 Forbidden)
+});

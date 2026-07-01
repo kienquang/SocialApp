@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens; // <-- Rất quan trọng cho API
 
-class User extends Authenticatable // implements MustVerifyEmail (nếu bạn cần xác thực email)
+class User extends Authenticatable implements MustVerifyEmail// implements MustVerifyEmail (nếu bạn cần xác thực email)
 {
     // Sử dụng các Trait
     use HasApiTokens, HasFactory, Notifiable;
@@ -26,8 +26,9 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
         'email',
         'password',
         'google_id',      // Dùng cho Socialite
-        'facebook_id',    // Dùng cho Socialite
+        'github_id',    // Dùng cho Socialite
         'avatar',
+        'cover_photo_url',
         'banned_until',
         // 'role' KHÔNG nên có ở đây.
         // Đây là một biện pháp bảo mật để ngăn người dùng tự gán 'admin' khi đăng ký.
@@ -91,7 +92,7 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
      */
     public function posts()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Post::class)->where('status', 'published');
     }
 
     /**
@@ -99,7 +100,7 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
      */
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->where('status', 'published');
     }
 
     /**
@@ -129,10 +130,6 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
     /**
      * Lấy các tin nhắn người dùng đã đọc.
      */
-    public function messageReads()
-    {
-        return $this->hasMany(Message_read::class, 'reader_id');
-    }
 
     /**
      * Lấy các lượt "mention" người dùng này đã thực hiện.
@@ -210,7 +207,7 @@ class User extends Authenticatable // implements MustVerifyEmail (nếu bạn c�
 
     /**
      * Các bài viết mà người này đã vote.
-     * Thêm withPivot('vote') để lấy cả cột 'vote'.
+     * Thêm withPivot('vote') để lấy cả cột 'vote' TRONG BẢNG TRUNG GIAN post_votes.
      */
     public function votedPosts()
     {

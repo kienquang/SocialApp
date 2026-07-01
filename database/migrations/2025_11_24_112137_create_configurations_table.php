@@ -13,11 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('message_reads', function (Blueprint $table) {
+        Schema::create('configurations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('message_id')->constrained('messages')->onDelete('cascade');
-            $table->foreignId('reader_id')->constrained('users')->onDelete('cascade');
-            $table->timestamp('read_at')->useCurrent();
+            $table->string('key')->unique(); // Tên cấu hình (ví dụ: 'site_logo')
+            $table->text('value')->nullable(); // Giá trị (URL ảnh, text...)
+            $table->timestamps();
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('message_reads');
+        Schema::dropIfExists('configurations');
     }
 };

@@ -17,11 +17,21 @@ return new class extends Migration
             $table->id(); // Tương đương bigint(20) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY
             $table->string('name', 100); // Đã đổi từ username
             $table->string('email', 150)->unique();
-            $table->string('password');
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password')->nullable();
             $table->string('role')->default('user');
             $table->string('google_id')->nullable();
-            $table->string('facebook_id')->nullable();
-            $table->string('avatar', 500)->nullable();
+            $table->string('github_id')->nullable();
+            // (CẬP NHẬT) Thêm (Add) URL (Đường dẫn) mặc định (default)
+            $table->string('avatar', 500)
+                  ->nullable()
+                  ->default('https://res.cloudinary.com/dijvgjj4m/image/upload/v1761655167/user_avatars/default_avatar_n2x7tq.jpg');
+
+            // (MỚI) Thêm (Add) cột (column) 'cover_photo_url' (đường dẫn ảnh bìa)
+            $table->string('cover_photo_url', 500)
+                  ->nullable()
+                  ->default('https://res.cloudinary.com/dijvgjj4m/image/upload/v1761655167/user_covers/default_cover_gkf3a6.jpg');
+
             $table->timestamp('banned_until')->nullable();
             $table->rememberToken();
             $table->timestamps();

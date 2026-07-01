@@ -25,7 +25,7 @@ class UsersSeeder extends Seeder
                 'email' => 'superadmin@example.com',
                 'password' => $password,
                 'role' => 'superadmin',
-                'avatar' => 'https://i.pravatar.cc/150?img=1',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -35,7 +35,7 @@ class UsersSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => $password,
                 'role' => 'admin',
-                'avatar' => 'https://i.pravatar.cc/150?img=2',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -45,7 +45,7 @@ class UsersSeeder extends Seeder
                 'email' => 'mod@example.com',
                 'password' => $password,
                 'role' => 'moderator',
-                'avatar' => 'https://i.pravatar.cc/150?img=3',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -56,7 +56,7 @@ class UsersSeeder extends Seeder
                 'email' => 'alice@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=4',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -66,7 +66,7 @@ class UsersSeeder extends Seeder
                 'email' => 'bob@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=5',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -76,7 +76,7 @@ class UsersSeeder extends Seeder
                 'email' => 'charlie@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=6',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -86,7 +86,7 @@ class UsersSeeder extends Seeder
                 'email' => 'david@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=7',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -96,7 +96,7 @@ class UsersSeeder extends Seeder
                 'email' => 'eve@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=8',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -106,7 +106,7 @@ class UsersSeeder extends Seeder
                 'email' => 'frank@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=9',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => null,
                 'created_at' => $now, 'updated_at' => $now
             ],
@@ -117,7 +117,7 @@ class UsersSeeder extends Seeder
                 'email' => 'banned@example.com',
                 'password' => $password,
                 'role' => 'user',
-                'avatar' => 'https://i.pravatar.cc/150?img=10',
+                'avatar' => 'https://res.cloudinary.com/dijvgjj4m/image/upload/v1762517867/laravel_posts/y5zqxzvkk4tttrj8edmj.jpg',
                 'banned_until' => Carbon::now()->addDays(7), // Bị ban (khóa) 7 ngày
                 'created_at' => $now, 'updated_at' => $now
             ],

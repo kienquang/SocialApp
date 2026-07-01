@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-
+use Database\Seeders\UsersSeeder;
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
             MessagesSeeder::class,
             NotificationsSeeder::class,
             CommentsSeeder::class,
-            MessageReadsSeeder::class,
-            MentionsSeeder::class,
+            ConversationsSeeder::class,
+            ConfigurationsSeeder::class,
             PostVotesSeeder::class,
+            AdvertisementsSeeder::class,
             ReportsSeeder::class,
             // Các bảng report không có dữ liệu mẫu nên không cần gọi seeder
         ]);

@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate; // Dùng cho Policy
 use Mews\Purifier\Facades\Purifier; // Dùng để chống XSS
 use Illuminate\Database\Eloquent\Builder; // Dùng để type-hint $query
-
+use App\Models\User;
+use App\Events\PostCreatedNotification;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\StoreUserPostNotification;
+use App\Models\Notification;
+use App\Jobs\PostNotification;
 class PostController extends Controller
 {
     /**
@@ -37,12 +42,16 @@ class PostController extends Controller
             'limit' => 'sometimes|integer|min:1|max:50' ,
             'category' => 'nullable|integer|exists:categories,id' ,// (MỚI) Lọc theo Category
             'q' => 'nullable|string|max:255', //  Tham số tìm kiếm
+            'user_id' => 'nullable|integer|exists:users,id',
+            'feed' => 'nullable|string|in:all,following'
         ]);
 
         $sortType = $request->query('sort', 'newest'); // Mặc định là 'newest'
         $limit = $request->query('limit', 10);
         $categoryId = $request->query('category'); // (MỚI)
         $searchTerm = $request->input('q');
+        $userId = $request->query('user_id', null);
+        $feedType = $request->query('feed', 'all');
 
         /** @var Builder $query */
         $query = Post::query();
@@ -51,32 +60,43 @@ class PostController extends Controller
         $query->where('status', 'published');
 
         // 1. Tải các quan hệ cần thiết
-        // (MỚI: Thêm 'category')
         $query->with(['user', 'category']);
 
         // 2. Tải các số đếm
-        // Dùng 'allComments' (đã sửa) để đếm TẤT CẢ bình luận
+        // Dùng 'allComments' để đếm TẤT CẢ bình luận
         $query->withCount('allComments as comments_count');
         $query->withSum('votes as vote_score', 'vote'); // Đã sửa (dùng 'votes')
 
-        // (MỚI) 3. Lọc theo Category nếu có
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
+        //Locj theo feed
+        if($feedType=== 'following'){
+            /** @var \App\Models\User|null $currentUser */
+            $currentUser= Auth::guard('sanctum')->user();
+
+            if(!$currentUser){
+                return response()->json(['message'=>'Ban can dang nhap de xem ban tin theo doi'],401);
+            }
+            //Lay danh sach id nhung ng minh theo doi
+            $followingIds = $currentUser->following()->pluck('users.id');
+
+            $query->whereIn('user_id',$followingIds);
         }
-        // 6. (MỚI) Tìm kiếm (Searching)
+
+        // 5. Lọc (Filter) (Search (Tìm kiếm), Category (Chuyên mục), VÀ User (Người dùng))
         if ($searchTerm) {
-            // Bao bọc trong where() để logic AND/OR không bị lẫn
             $query->where(function ($subQuery) use ($searchTerm) {
                 $likeTerm = '%' . $searchTerm . '%';
-                // Tìm theo Tiêu đề BÀI VIẾT
                 $subQuery->where('title', 'LIKE', $likeTerm)
-                         // HOẶC tìm theo Nội dung BÀI VIẾT (có thể chậm)
                          ->orWhere('content_html', 'LIKE', $likeTerm)
-                         // HOẶC tìm theo Tên TÁC GIẢ
                          ->orWhereHas('user', function ($userQuery) use ($likeTerm) {
                              $userQuery->where('name', 'LIKE', $likeTerm);
                          });
             });
+        }
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        if ($userId) { // <-- (MỚI)
+            $query->where('user_id', $userId);
         }
 
         // 4. Sắp xếp
@@ -130,6 +150,13 @@ class PostController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        //Kiểm tra tài khoản đã xác thực chưa
+        if($user->email_verified_at == NULL){
+            return response()->json([
+                'message'=>'Bạn phải xác thực email để đăng bài',
+            ]);
+        }
+
         // Tạo bài viết
         $post = $user->posts()->create([
             'title' => $validated['title'],
@@ -138,6 +165,40 @@ class PostController extends Controller
             'thumbnail_url' => $validated['thumbnail_url'], // <-- THÊM MỚI
             'status'=>'published',
         ]);
+
+        $post_notification = [
+            'post_id' => $post->id,
+            'title' => $post->title,
+            'created_at' => now(),
+            'sender' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+            ]
+        ];
+
+        dispatch(new PostNotification((object)$post_notification,$user->followers()->pluck('users.id')->toArray()))->onQueue('notification');
+
+        $notification=Notification::create([
+            'sender_id' => $user->id,
+            'type' => 'post',
+            'post_id' => $post->id,
+            'comment_id' => null,
+            'created_at' => now(),
+        ]);
+
+        $followerIds = $user->followers()->pluck('users.id')->toArray();
+        //dd($followerIds);
+
+        //dd($notificationData);
+        dispatch(new StoreUserPostNotification(
+            $notification->id,
+            $user->id,
+            $post->id,
+            null,
+            'post',
+            $followerIds
+        ))->onQueue('notification');
 
         // Tải lại các quan hệ cần thiết để trả về JSON chuẩn
         // (MỚI: Thêm 'category')
@@ -161,8 +222,19 @@ class PostController extends Controller
      */
     public function show(Request $request, Post $post)
     {
-        if ($post->status !== 'published') {
-             return response()->json(['message' => 'Bài viết không tồn tại.'], 404);
+        /** @var \App\Models\User|null $user */
+        $user= Auth::guard('sanctum')->user();
+
+        //kiểm tra quyền xem
+        $canView = false;
+        if($post->status === 'published'){
+            $canView = true;
+        }elseif ($user && $user->can('view', $post)){
+            $canView = true;
+        }
+        //nếu cả 2 đều k thỏa mản
+        if(!$canView){
+            return response()->json(['message'=>' Bai viet khong ton tai'], 404);
         }
         // Tải các quan hệ chính
         $post->load(['user', 'category']);
@@ -171,21 +243,19 @@ class PostController extends Controller
         $post->loadCount('allComments as comments_count');
         $post->loadSum('votes as vote_score', 'vote');
 
-        // Tải bình luận GỐC (phân trang)
-        $post->load([
-            'comments' => function ($query) {
-                $query->with('user') // Tải tác giả của bình luận
-                      ->withCount('replies as replies_count') // Đếm số phản hồi
-                      ->orderBy('created_at', 'asc'); // Cũ nhất trước
-            }
-        ]);
-
+        /** @var \App\Models\User|null $user */
         $user = Auth::guard('sanctum')->user();
         // Tải vote của user hiện tại (nếu đã đăng nhập)
         if ($user) {
             $post->load(['votes' => function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             }]);
+            // (LOGIC (LOGIC) MỚI) 6. Tính toán (Calculate) `is_following_author` (trạng thái theo dõi tác giả)
+            $isFollowing = $user->following()->where('followed_id', $post->user_id)->exists();
+            $post->is_following_author = $isFollowing; // Thêm (Add) thuộc tính "ảo" (virtual)
+        } else {
+            // Nếu là khách (guest), mặc định (default) là false (sai)
+            $post->is_following_author = false;
         }
 
         return new PostResource($post);

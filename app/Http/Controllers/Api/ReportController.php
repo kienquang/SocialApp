@@ -11,6 +11,9 @@ use App\Models\Report_user;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Events\PostReportSent;
+use App\Events\CommentReportSent;
+use App\Events\UserReportSent;
 
 class ReportController extends Controller
 {
@@ -49,11 +52,13 @@ class ReportController extends Controller
         }
 
         // 3. Tạo báo cáo
-        Report_post::create([
+        $report = Report_post::create([
             'post_id' => $post->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
+
+        event(new PostReportSent($report->id, $reporter, $validated['reason'], $post));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -77,19 +82,21 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_comment::where('comment_id', $comment->id)
-                                 ->where('reporter_id', $reporter->id)
-                                 ->first();
+                                  ->where('reporter_id', $reporter->id)
+                                  ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo nội dung này rồi.'], 409);
         }
 
         // 3. Tạo báo cáo
-        Report_comment::create([
+        $report = Report_comment::create([
             'comment_id' => $comment->id,
             'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reason'      => $validated['reason'],
         ]);
+
+        event(new CommentReportSent($report->id, $reporter, $validated['reason'], $comment));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }
@@ -113,19 +120,21 @@ class ReportController extends Controller
 
         // 2. Kiểm tra trùng lặp
         $existing = Report_user::where('reported_user_id', $user->id)
-                              ->where('reporter_id', $reporter->id)
-                              ->first();
+                               ->where('reporter_id', $reporter->id)
+                               ->first();
 
         if ($existing) {
             return response()->json(['message' => 'Bạn đã báo cáo người dùng này rồi.'], 409);
         }
 
         // 3. Tạo báo cáo
-        Report_user::create([
+        $report = Report_user::create([
             'reported_user_id' => $user->id,
-            'reporter_id' => $reporter->id,
-            'reason' => $validated['reason'],
+            'reporter_id'      => $reporter->id,
+            'reason'           => $validated['reason'],
         ]);
+
+        event(new UserReportSent($report->id, $reporter, $validated['reason'], $user));
 
         return response()->json(['message' => 'Báo cáo của bạn đã được gửi thành công.'], 201);
     }

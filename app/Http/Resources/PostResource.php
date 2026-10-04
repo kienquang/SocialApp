@@ -46,6 +46,8 @@ class PostResource extends JsonResource
             'thumbnail_url' => $this->optimizeUrl($this->thumbnail_url),
             'content_html' => $this->when($request->routeIs('posts.show'), $this->content_html), // Chỉ hiển thị content khi xem chi tiết
             'category' => new CategoryResource($this->whenLoaded('category')),
+            'source_url' => $this->source_url,
+            'source_name' => $this->source_name,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 

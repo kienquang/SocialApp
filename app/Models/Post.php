@@ -21,6 +21,8 @@ class Post extends Model
         'category_id',
         'thumbnail_url',
         'status',
+        'source_url',
+        'source_name',
     ];
 
     /**

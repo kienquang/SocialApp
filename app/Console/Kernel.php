@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Tự động cào tin mới 1 ngày 1 lần vào lúc 06:00 sáng, không chạy chồng chéo
+        $schedule->command('news:crawl')->dailyAt('06:00')->withoutOverlapping();
     }
 
     /**

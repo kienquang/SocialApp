@@ -16,9 +16,9 @@
         };
 
         // Gửi data về cửa sổ cha (Trang Login Vuejs)
-        // '*' cho phép gửi đến mọi domain thay bằng 'http://localhost:5173' để bảo mật hơn
+        const frontendUrl = "{{ config('app.frontend_url') ?? 'http://localhost:5173' }}";
         if (window.opener) {
-            window.opener.postMessage(data, 'http://localhost:5173')
+            window.opener.postMessage(data, frontendUrl);
         }
 
         // Đóng popup này lại

@@ -13,8 +13,9 @@ envsubst '${PORT}' < /etc/nginx/conf.d/nginx.conf.template > /etc/nginx/http.d/d
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Tạo storage link nếu chưa có
+# Tạo storage link và nạp package discover khi đã có biến môi trường
 php /var/www/html/artisan storage:link || true
+php /var/www/html/artisan package:discover --ansi || true
 
 # Xóa cache cũ để nhận biến môi trường mới từ Render
 php /var/www/html/artisan optimize:clear || true

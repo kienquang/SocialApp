@@ -34,8 +34,8 @@ WORKDIR /var/www/html
 # Copy toàn bộ mã nguồn vào container
 COPY . /var/www/html
 
-# Cài đặt các package composer ở chế độ production (tối ưu hóa autoload)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Cài đặt các package composer ở chế độ production (tối ưu hóa autoload, không chạy scripts lúc build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # Copy các file cấu hình Docker
 COPY docker/nginx.conf /etc/nginx/conf.d/nginx.conf.template

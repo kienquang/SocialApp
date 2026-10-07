@@ -17,4 +17,14 @@ Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
 
+Route::get('/docs', function () {
+    return redirect('/swagger/index.html');
+});
+
+Route::get('/swagger', function () {
+    return redirect('/swagger/index.html');
+});
+
+
+
 
